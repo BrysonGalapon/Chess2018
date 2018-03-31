@@ -1,0 +1,29 @@
+<project name="Chess2018" default="compile">
+  <description>
+    Chess2018 compiler
+  </description>
+
+  <!-- Global Properties -->
+  <property name="src" value="src"/>
+  <property name="tests" value="tests"/>
+  <property name="bin" value="bin"/>
+
+  <!-- Compilation -->
+  <target name="compile" depends="init">
+    <!-- compile src -->
+    <javac srcdir="${src}" destdir="${bin}/${src}" includeantruntime="false"/>
+    <!-- compile tests -->
+    <javac srcdir="${tests}" destdir="${bin}/${tests}" includeantruntime="false"/>
+  </target>
+
+  <!-- Initialization sequence -->
+  <target name="init">
+    <mkdir dir="${bin}/${src}"/>
+    <mkdir dir="${bin}/${tests}"/>
+  </target>
+
+  <!-- Cleaning sequence -->
+  <target name="clean">
+    <delete dir="${bin}"/>
+  </target>
+</project>
