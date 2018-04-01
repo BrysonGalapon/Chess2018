@@ -32,6 +32,28 @@ public class Move {
   }
 
   /**
+   * Create a new chess Move using chess coordinates (ie 'a1' or 'c7')
+   * @param pieceType the type of piece to be moved
+   * @param startSquare the square in chess coordinates at which the piece starts at
+   * @param endSquare the square in chess coordinates at which the piece ends at
+   * @throws Error if either startSquare or endSquare is an invalid coordinate
+   */
+  public Move(PieceType pieceType, String startSquare, String endSquare) {
+    if (startSquare.length() != 2 || endSquare.length() != 2) {throw new Error("startSquare or endSquare isn't 2 chars long");}
+
+    char startChar1 = startSquare.charAt(0);
+    char startChar2 = startSquare.charAt(1);
+    char endChar1 = endSquare.charAt(0);
+    char endChar2 = endSquare.charAt(1);
+
+    this.pieceType = pieceType;
+    this.start_row = this.rankToRow(startChar2);
+    this.start_col = this.fileToCol(startChar1);
+    this.end_row = this.rankToRow(endChar2);
+    this.end_col = this.fileToCol(endChar1);
+  }
+
+  /**
    * Obtain the type of piece that is being moved
    * @return the type of piece being moved
    */
@@ -72,9 +94,68 @@ public class Move {
   }
 
   /**
+   * Convert a chess file to a column
+   * @param file the chess file
+   * @return the 0-indexed column corresponding to the file
+   * @throws Error if the chess file isn't a valid file
+   */
+  private int fileToCol(char file) {
+    switch(file) {
+      case 'a':
+        return 0;
+      case 'b':
+        return 1;
+      case 'c':
+        return 2;
+      case 'd':
+        return 3;
+      case 'e':
+        return 4;
+      case 'f':
+        return 5;
+      case 'g':
+        return 6;
+      case 'h':
+        return 7;
+      default:
+        throw new Error(String.format("Invalid file: %s ", file));
+    }
+  }
+
+  /**
+   * Convert a chess rank to a row
+   * @param rank the chess rank
+   * @return the 0-indexed row corresponding to the rank
+   * @throws Error if the chess rank isn't a valid rank
+   */
+  private int rankToRow(char rank) {
+    switch(rank) {
+      case '1':
+        return 0;
+      case '2':
+        return 1;
+      case '3':
+        return 2;
+      case '4':
+        return 3;
+      case '5':
+        return 4;
+      case '6':
+        return 5;
+      case '7':
+        return 6;
+      case '8':
+        return 7;
+      default:
+        throw new Error(String.format("Invalid rank: %s ", rank));
+    }
+  }
+
+  /**
    * Obtain the chess coordinate equivalent of a square
    * @param row 0-indexed row of square
    * @param col 0-indexed column of square
+   * @throws Error if (row, col) is not a valid square 
    */
   private String chessCoord(int row, int col) {
     String file;

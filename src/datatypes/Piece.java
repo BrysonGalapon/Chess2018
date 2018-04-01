@@ -4,44 +4,43 @@ package src.datatypes;
  * Represents a chess piece
  */
 public interface Piece {
+  /*
+   * Piece := Pawn | Rook | Knight | Bishop | Queen | King
+   */
+
   /**
    * Obtain a new pawn
    */
   public static Piece pawn(Color color) {
-    // TODO
-    return null;
+    return new Pawn(color);
   }
 
   /**
    * Obtain a new rook
    */
   public static Piece rook(Color color) {
-    // TODO
-    return null;
+    return new Rook(color);
   }
 
   /**
    * Obtain a new knight
    */
   public static Piece knight(Color color) {
-    // TODO
-    return null;
+    return new Knight(color);
   }
 
   /**
    * Obtain a new bishop
    */
   public static Piece bishop(Color color) {
-    // TODO
-    return null;
+    return new Bishop(color);
   }
 
   /**
    * Obtain a new queen
    */
   public static Piece queen(Color color) {
-    // TODO
-    return null;
+    return new Queen(color);
   }
 
   /**

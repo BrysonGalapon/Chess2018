@@ -108,6 +108,14 @@ public class Board {
   }
 
   /**
+   * Obtain a list of all moves played
+   * @return a list of all the moves played on this board
+   */
+  public List<Move> getMoveList() {
+    return new ArrayList<Move>(this.moveList);
+  }
+
+  /**
    * Obtain the last move played on this board
    *  - returns null if no moves have been played
    */
@@ -131,6 +139,8 @@ public class Board {
    *          - black pieces are lowercase letters
    *          - squares with no pieces contain a "-"
    *          - squares are horizontally separated by 2 spaces
+   *          - at the end of a row, the last character should
+   *              be immediately followed by a '\n' character
    */
   @Override
   public String toString() {
@@ -149,6 +159,9 @@ public class Board {
           rep += String.format("%s  ", "-");
         }
       }
+      // remove the trialing 2 spaces at end of row
+      rep = rep.substring(0, rep.length()-2);
+      
       // insert a break after every row, except for the last one
       if (row != 0) {
         rep += "\n";
