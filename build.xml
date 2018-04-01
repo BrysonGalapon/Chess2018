@@ -4,22 +4,55 @@
   </description>
 
   <!-- Global Properties -->
-  <property name="src" value="src"/>
-  <property name="tests" value="tests"/>
-  <property name="bin" value="bin"/>
+  <property name="main.build.dir" value="bin/src"/>
+  <property name="main.src.dir" value="src"/>
+  <property name="test.build.dir" value="bin/tests"/>
+  <property name="test.src.dir" value="tests"/>
 
-  <!-- Compilation -->
-  <target name="compile" depends="init">
-    <!-- compile src -->
-    <javac srcdir="${src}" destdir="${bin}/${src}" includeantruntime="false"/>
-    <!-- compile tests -->
-    <javac srcdir="${tests}" destdir="${bin}/${tests}" includeantruntime="false"/>
-  </target>
+  <property name="lib" value="lib"/>
+  <property name="bin" value="bin"/>
+  <property name="junit_file" value="junit-4.12.jar"/>
+  <property name="junit_core" value="hamcrest-core-1.3.jar"/>
+
+  <!-- Classpaths -->
+  <path id="classpath.test">
+    <pathelement location="${lib}/${junit_file}"/>
+    <pathelement location="${lib}/${junit_core}"/>
+    <pathelement location="${main.build.dir}"/>
+  </path>
 
   <!-- Initialization sequence -->
   <target name="init">
-    <mkdir dir="${bin}/${src}"/>
-    <mkdir dir="${bin}/${tests}"/>
+    <mkdir dir="${main.build.dir}"/>
+    <mkdir dir="${test.build.dir}"/>
+  </target>
+
+  <!-- Source Compilation -->
+  <target name="compile" depends="init">
+    <!-- compile src -->
+    <javac srcdir="${main.src.dir}" destdir="${main.build.dir}" includeantruntime="false"/>
+  </target>
+
+  <!-- Test Compilation -->
+  <target name="compile-tests" depends="compile">
+    <!-- compile src -->
+    <javac srcdir="${test.src.dir}" destdir="${test.build.dir}" includeantruntime="false">
+      <classpath refid="classpath.test"/>
+    </javac>
+  </target>
+
+  <!-- Tests -->
+  <target name="test" depends="compile-tests">
+    <junit printsummary="on" haltonfailure="yes" fork="false">
+      <classpath>
+        <path refid="classpath.test"/>
+        <pathelement location="${test.build.dir}"/>
+      </classpath>
+      <formatter type="brief" usefile="false" />
+      <batchtest>
+          <fileset dir="${test.src.dir}" includes="**/*Test*" />
+      </batchtest>
+    </junit>
   </target>
 
   <!-- Cleaning sequence -->
