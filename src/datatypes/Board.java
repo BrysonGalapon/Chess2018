@@ -9,7 +9,7 @@ import java.util.*;
  */
 public class Board {
   // list of all the moves played
-  private final List<Move> moves;
+  private final List<Move> moveList;
   // board containing chess pieces
   private final Piece[][] board;
 
@@ -23,7 +23,7 @@ public class Board {
    */
   public Board() {
     // create moves list
-    moves = new LinkedList<Move>();
+    moveList = new LinkedList<Move>();
     // create board
     board = new Piece[NUM_ROWS][NUM_COLS];
 
@@ -63,12 +63,58 @@ public class Board {
   }
 
   /**
+   * Removes piece from square and returns it if it exists
+   * @param row row of square to remove piece from
+   * @param col column of square to remove piece from
+   * @return the piece on that square, if it exists.
+   *         if the piece doesn't exist, return null
+   */
+  public Piece clearSquare(int row, int col) {
+    Piece piece = board[row][col];
+    if (piece == null) {return null;}
+
+    board[row][col] = null;
+    return piece;
+  }
+
+  /**
+   * Obtain the piece at a given square, without removing it
+   * @param row row of square to get piece from
+   * @param col column of square to get piece from
+   * @return the piece on that square, if it exists.
+   *         if the piece doesn't exist, return null
+   */
+  public Piece getPiece(int row, int col) {
+    Piece piece = board[row][col];
+    if (piece == null) {return null;}
+    return piece.copy();
+  }
+
+  /**
    * Check if a square contains a piece on it
    * @param row 0-indexed row of square query
    * @param col 0-indexed column of square query
    */
   public boolean containsPiece(int row, int col) {
     return board[row][col] != null;
+  }
+
+  /**
+   * Make a move on this board - does nothing if move is illegal
+   */
+  public void move(Move move) {
+    // TODO
+    this.moveList.add(move);
+  }
+
+  /**
+   * Obtain the last move played on this board
+   *  - returns null if no moves have been played
+   */
+  public Move getLastMove() {
+    int movelist_length = this.moveList.size();
+    if (movelist_length == 0) {return null;}
+    return this.moveList.get(movelist_length-1);
   }
 
   /**
