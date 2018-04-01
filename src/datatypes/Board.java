@@ -100,7 +100,7 @@ public class Board {
           rep += String.format("%s  ", piece.toString());
         } else {
           // insert a '-' if no piece on that square
-          rep += String.format("%s  , "-");
+          rep += String.format("%s  ", "-");
         }
       }
       // insert a break after every row, except for the last one

@@ -43,7 +43,7 @@
 
   <!-- Tests -->
   <target name="test" depends="compile-tests">
-    <junit printsummary="on" haltonfailure="yes" fork="false">
+    <junit printsummary="on" haltonfailure="yes" fork="true">
       <classpath>
         <path refid="classpath.test"/>
         <pathelement location="${test.build.dir}"/>
