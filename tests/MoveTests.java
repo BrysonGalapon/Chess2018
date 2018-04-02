@@ -111,8 +111,8 @@ public class MoveTests {
 
   @Test
   public void testToString4() {
-    Move move = new Move(PieceType.QUEEN, "e4", "h8");
-    String expectedString = "Qe4->h8";
+    Move move = new Move(PieceType.QUEEN, "e5", "h8");
+    String expectedString = "Qe5->h8";
     assertEquals("Incorrect move notation", expectedString, move.toString());
   }
 }
