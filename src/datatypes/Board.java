@@ -8,8 +8,12 @@ import java.util.*;
  *  moved
  */
 public class Board {
-  // list of all the moves played
+  // list of all the moves played, in order
   private final List<Move> moveList;
+  // list of all captured pieces, in order
+  private final List<Piece> capturedPieces;
+  // side who is currently to move
+  private Color turn;
   // board containing chess pieces
   private final Piece[][] board;
 
@@ -18,12 +22,14 @@ public class Board {
   // number of rows on the chess board
   private final int NUM_ROWS=8;
 
-  /*
+  /**
    * Create a new Board
    */
   public Board() {
     // create moves list
     moveList = new LinkedList<Move>();
+    // create captured pieces list
+    capturedPieces = new LinkedList<Piece>();
     // create board
     board = new Piece[NUM_ROWS][NUM_COLS];
 
@@ -100,11 +106,46 @@ public class Board {
   }
 
   /**
+   * Obtain which side is currently to move
+   * @return the side currently to move
+   */
+  public Color getTurn() {
+    return this.turn;
+  }
+
+  /**
+   * Toggle the side to move from white to black, or black to white
+   */
+  public void toggleTurn() {
+    // TODO
+  }
+
+  /**
+   * Undoes the last move played on this board - does nothing
+   *  if there are no more moves to undo
+   */
+  public void undoLastMove() {
+    // TODO
+  }
+
+  /**
    * Make a move on this board - does nothing if move is illegal
    */
   public void move(Move move) {
     // TODO
     this.moveList.add(move);
+  }
+
+  /**
+   * Obtain the list of pieces that have been captured
+   * @return the list of pieces that have been captured, in order
+   */
+  public List<Piece> getCapturedPieces() {
+    List<Piece> capturedPiecesCopy = new LinkedList<Piece>();
+    for (Piece capturedPiece : this.capturedPieces) {
+      capturedPiecesCopy.add(capturedPiece.copy());
+    }
+    return capturedPiecesCopy;
   }
 
   /**
@@ -170,6 +211,14 @@ public class Board {
 
     return rep;
   }
-}
 
+  @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof Board)) {return false;}
+    Board otherBoard = (Board) other;
+    // TODO board is equivalent if same player to move
+    //        same pieces of same color occupy squares
+    //        same legal moves for all pieces
+  }
+}
 
