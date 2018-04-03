@@ -17,6 +17,9 @@ public class Board {
   // board containing chess pieces
   private final Piece[][] board;
 
+  // maps compressed string to UNMODIFIABLE sets of legal moves
+  private final Map<String, Set<Move>> legalMoveHistory;
+
   // number of columns on the chess board
   private final int NUM_COLS=8;
   // number of rows on the chess board
@@ -32,6 +35,11 @@ public class Board {
     capturedPieces = new LinkedList<Piece>();
     // create board
     board = new Piece[NUM_ROWS][NUM_COLS];
+    // create legal move history
+    legalMoveHistory = new HashMap<String, Set<Move>>();
+
+    // set first turn to white
+    turn = Color.WHITE;
 
     // populate pawns
     for (int col=0; col<NUM_COLS; col++) {
@@ -137,6 +145,27 @@ public class Board {
   }
 
   /**
+   * Obtain the set of legal moves for this position
+   * @return the set of legal moves for the current side
+   *          to move
+   */
+  public Set<Move> legalMoves() {
+    String compressedBoard = this.compressBoard();
+    if (this.legalMoveHistory.containsKey(compressedBoard)) {
+      // return unmodifiable set of legal moves
+      return this.legalMoveHistory.get(compressedBoard);
+    }
+
+    Set<Move> legalMoveSet = new HashSet<>();
+    // TODO 
+    // Compute set of legal moves
+
+    // add unmodifiable version of legal moves to hashmap for future calls
+    this.legalMoveHistory.put(compressedBoard, Collections.unmodifiableSet(legalMoveSet));
+    return legalMoveSet;
+  }
+
+  /**
    * Obtain the list of pieces that have been captured
    * @return the list of pieces that have been captured, in order
    */
@@ -164,6 +193,61 @@ public class Board {
     int movelist_length = this.moveList.size();
     if (movelist_length == 0) {return null;}
     return this.moveList.get(movelist_length-1);
+  }
+
+  /**
+   * Compresses the board state into a string s such that
+   *  only equivalent positions gets compressed to s
+   *    - two positions are equivalent if:
+   *      - same player to move
+   *      - same set of legal moves
+   *      - same pieces of same color on same squares
+   *  @return the string s that the board gets compressed to
+   */
+  public String compressBoard() {
+    String s = "";
+    // encode position
+    for (int row=0; row<NUM_ROWS; row++) {
+      for (int col=0; col<NUM_COLS; col++) {
+        if (this.containsPiece(row,col)) {
+          Piece piece = board[row][col];
+          PieceType type = piece.getType();
+          if (!type.equals(PieceType.ROOK) && !type.equals(PieceType.KING)) {
+            // piece on this square, but not a rook or king
+            s += String.format("%s", piece.toString());
+          } else {
+            // piece on this square, but rook or king, so have to
+            //  include whether or not it moved
+            s += String.format("%s%s", piece.toString(), (piece.hasMoved() ? "v":"x"));
+          }
+        } else {
+          // no piece, insert a - in place of empty square
+          s += String.format("%s", "-");
+        }
+      }
+    }
+
+    // encode player turn
+    switch(this.getTurn()) {
+      case WHITE:
+        s += "w";
+        break;
+      case BLACK:
+        s += "l";
+        break;
+      default:
+        throw new Error("Unexpected Color");
+    }
+
+    // encode last move played
+    Move lastMove = this.getLastMove();
+    if (lastMove == null) {
+      s += "/";
+    } else {
+      s += lastMove.toString();
+    }
+
+    return s;
   }
 
   /**
@@ -219,6 +303,7 @@ public class Board {
     // TODO board is equivalent if same player to move
     //        same pieces of same color occupy squares
     //        same legal moves for all pieces
+    return false;
   }
 }
 
