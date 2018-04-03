@@ -192,6 +192,36 @@ public class Move {
   }
 
   /**
+   * Check if this move is a castling move
+   */
+  public boolean isCastleMove() {
+    boolean pieceIsKing = this.getPieceType().equals(PieceType.KING);
+    if (!pieceIsKing) {
+      return false;
+    }
+
+    String startSquare = this.chessCoord(this.getStartRow(), this.getStartCol());
+    String endSquare = this.chessCoord(this.getEndRow(), this.getEndCol());
+
+    // run through all 4 types of castling moves
+    if (startSquare.equals("e1") && endSquare.equals("g1")) {
+      // white castles kingside
+      return true;
+    } else if (startSquare.equals("e1") && endSquare.equals("c1")) {
+      // white castles queenside
+      return true;
+    } else if (startSquare.equals("e8") && endSquare.equals("g1")) {
+      // black castles kingside
+      return true;
+    } else if (startSquare.equals("e8") && endSquare.equals("c1")) {
+      // black castles queenside
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
    * Obtain the 0-indexed column at which the moved piece started at
    * @return the 0-indexed column at which the piece starts at
    */
@@ -277,6 +307,8 @@ public class Move {
    * Obtain the chess coordinate equivalent of a square
    * @param row 0-indexed row of square
    * @param col 0-indexed column of square
+   * @return a string composed of two characters: f+r, where
+   *          f is the file of the square and r is the rank 
    * @throws Error if (row, col) is not a valid square 
    */
   private String chessCoord(int row, int col) {
