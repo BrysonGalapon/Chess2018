@@ -30,50 +30,128 @@ public class Board {
    */
   public Board() {
     // create moves list
-    moveList = new LinkedList<Move>();
+    this.moveList = new LinkedList<Move>();
     // create captured pieces list
-    capturedPieces = new LinkedList<Piece>();
+    this.capturedPieces = new LinkedList<Piece>();
     // create board
-    board = new Piece[NUM_ROWS][NUM_COLS];
+    this.board = new Piece[NUM_ROWS][NUM_COLS];
     // create legal move history
-    legalMoveHistory = new HashMap<String, Set<Move>>();
+    this.legalMoveHistory = new HashMap<String, Set<Move>>();
 
     // set first turn to white
-    turn = Color.WHITE;
+    this.turn = Color.WHITE;
 
     // populate pawns
     for (int col=0; col<NUM_COLS; col++) {
       // populate white pawns on 2nd row
-      board[1][col] = Piece.pawn(Color.WHITE);
+      this.board[1][col] = Piece.pawn(Color.WHITE);
       // populate black pawns on 7th row
-      board[6][col] = Piece.pawn(Color.BLACK);
+      this.board[6][col] = Piece.pawn(Color.BLACK);
     }
 
     // populate rooks
-    board[0][0] = Piece.rook(Color.WHITE); // a1 rook
-    board[0][7] = Piece.rook(Color.WHITE); // h1 rook
-    board[7][0] = Piece.rook(Color.BLACK); // a8 rook
-    board[7][7] = Piece.rook(Color.BLACK); // h8 rook
+    this.board[0][0] = Piece.rook(Color.WHITE); // a1 rook
+    this.board[0][7] = Piece.rook(Color.WHITE); // h1 rook
+    this.board[7][0] = Piece.rook(Color.BLACK); // a8 rook
+    this.board[7][7] = Piece.rook(Color.BLACK); // h8 rook
 
     // populate knights
-    board[0][1] = Piece.knight(Color.WHITE); // b1 knight
-    board[0][6] = Piece.knight(Color.WHITE); // g1 knight
-    board[7][1] = Piece.knight(Color.BLACK); // b8 knight
-    board[7][6] = Piece.knight(Color.BLACK); // g8 knight
+    this.board[0][1] = Piece.knight(Color.WHITE); // b1 knight
+    this.board[0][6] = Piece.knight(Color.WHITE); // g1 knight
+    this.board[7][1] = Piece.knight(Color.BLACK); // b8 knight
+    this.board[7][6] = Piece.knight(Color.BLACK); // g8 knight
 
     // populate bishops
-    board[0][2] = Piece.bishop(Color.WHITE); // c1 bishop
-    board[0][5] = Piece.bishop(Color.WHITE); // f1 bishop
-    board[7][2] = Piece.bishop(Color.BLACK); // c8 bishop
-    board[7][5] = Piece.bishop(Color.BLACK); // f8 bishop
+    this.board[0][2] = Piece.bishop(Color.WHITE); // c1 bishop
+    this.board[0][5] = Piece.bishop(Color.WHITE); // f1 bishop
+    this.board[7][2] = Piece.bishop(Color.BLACK); // c8 bishop
+    this.board[7][5] = Piece.bishop(Color.BLACK); // f8 bishop
 
     // populate queens
-    board[0][3] = Piece.queen(Color.WHITE); // d1 queen
-    board[7][3] = Piece.queen(Color.BLACK); // d8 queen
+    this.board[0][3] = Piece.queen(Color.WHITE); // d1 queen
+    this.board[7][3] = Piece.queen(Color.BLACK); // d8 queen
 
     // populate kings
-    board[0][4] = Piece.king(Color.WHITE); // e1 king
-    board[7][4] = Piece.king(Color.BLACK); // e8 king
+    this.board[0][4] = Piece.king(Color.WHITE); // e1 king
+    this.board[7][4] = Piece.king(Color.BLACK); // e8 king
+  }
+
+  /**
+   * Create new Board
+   * @param boardStr representation of position as described
+   *                in the @see toString specification
+   * @param turn the player (white or black) to next to move
+   */
+  public Board(String boardStr, Color turn) {
+    // create moves list
+    this.moveList = new LinkedList<Move>();
+    // create captured pieces list
+    this.capturedPieces = new LinkedList<Piece>();
+    // create board
+    this.board = new Piece[NUM_ROWS][NUM_COLS];
+    // create legal move history
+    this.legalMoveHistory = new HashMap<String, Set<Move>>();
+
+    // set first turn to white
+    this.turn = turn;
+
+    // split, delimiting by double-spaces and newlines
+    String[] tokens = boardStr.split("  |\n");
+
+    int row = 7;
+    int col = 0;
+    for (String token : tokens) {
+      if (token.equals("-")) {
+        // empty square, so do nothing
+      } else {
+        switch(token) {
+          case "P":
+            this.board[row][col] = Piece.pawn(Color.WHITE);
+            break;
+          case "R":
+            this.board[row][col] = Piece.rook(Color.WHITE);
+            break;
+          case "N":
+            this.board[row][col] = Piece.knight(Color.WHITE);
+            break;
+          case "B":
+            this.board[row][col] = Piece.bishop(Color.WHITE);
+            break;
+          case "Q":
+            this.board[row][col] = Piece.queen(Color.WHITE);
+            break;
+          case "K":
+            this.board[row][col] = Piece.king(Color.WHITE);
+            break;
+          case "p":
+            this.board[row][col] = Piece.pawn(Color.BLACK);
+            break;
+          case "r":
+            this.board[row][col] = Piece.rook(Color.BLACK);
+            break;
+          case "n":
+            this.board[row][col] = Piece.knight(Color.BLACK);
+            break;
+          case "b":
+            this.board[row][col] = Piece.bishop(Color.BLACK);
+            break;
+          case "q":
+            this.board[row][col] = Piece.queen(Color.BLACK);
+            break;
+          case "k":
+            this.board[row][col] = Piece.king(Color.BLACK);
+            break;
+          default:
+            throw new Error(String.format("Unhandled token type: %s", token));
+        }
+      }
+
+      col++;
+      if (col == 8) {
+        row--;
+        col = 0;
+      }
+    }
   }
 
   /**
