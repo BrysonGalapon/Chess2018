@@ -8,6 +8,8 @@ public class Move {
   private final PieceType pieceType;
   // whether or not this move captures a piece
   private final boolean isCapture;
+  // whether or not this move involves a promotion
+  private final boolean isPromotion;
   // row of start square of piece
   private final int start_row;
   // column of start square of piece
@@ -16,6 +18,10 @@ public class Move {
   private final int end_row;
   // column of end square of piece
   private final int end_col;
+
+  /////////////////////////////////////////////////////
+  //       CONSTRUCTORS (There's alot of them)       //
+  /////////////////////////////////////////////////////
 
   /**
    * Create a new chess Move
@@ -32,6 +38,7 @@ public class Move {
     this.end_row = end_row;
     this.end_col = end_col;
     this.isCapture = false;
+    this.isPromotion = false;
   }
 
   /**
@@ -50,6 +57,27 @@ public class Move {
     this.end_row = end_row;
     this.end_col = end_col;
     this.isCapture = isCapture;
+    this.isPromotion = false;
+  }
+
+/**
+   * Create a new chess Move
+   * @param pieceType the type of piece to be moved
+   * @param start_row the 0-indexed row at which the piece starts at
+   * @param start_col the 0-indexed column at which the piece starts at 
+   * @param end_row the 0-indexed row at which the piece ends up at
+   * @param end_col the 0-indexed column at which the piece ends up at
+   * @param isCapture whether or not this move captures a piece
+   * @param isPromotion whether or not this move involves a promotion
+   */
+  public Move(PieceType pieceType, int start_row, int start_col, int end_row, int end_col, boolean isCapture, boolean isPromotion) {
+    this.pieceType = pieceType;
+    this.start_row = start_row;
+    this.start_col = start_col;
+    this.end_row = end_row;
+    this.end_col = end_col;
+    this.isCapture = isCapture;
+    this.isPromotion = isPromotion;
   }
 
   /**
@@ -73,6 +101,7 @@ public class Move {
     this.end_row = this.rankToRow(endChar2);
     this.end_col = this.fileToCol(endChar1);
     this.isCapture = false;
+    this.isPromotion = false;
   }
 
   /**
@@ -97,7 +126,38 @@ public class Move {
     this.end_row = this.rankToRow(endChar2);
     this.end_col = this.fileToCol(endChar1);
     this.isCapture = isCapture;
+    this.isPromotion = false;
   }
+
+  /**
+   * Create a new chess Move using chess coordinates (ie 'a1' or 'c7')
+   * @param pieceType the type of piece to be moved
+   * @param startSquare the square in chess coordinates at which the piece starts at
+   * @param endSquare the square in chess coordinates at which the piece ends at
+   * @param isCapture whether or not this move captures a piece
+   * @param isPromotion whether or not this move involves a promotion
+   * @throws Error if either startSquare or endSquare is an invalid coordinate
+   */
+  public Move(PieceType pieceType, String startSquare, String endSquare, boolean isCapture, boolean isPromotion) {
+    if (startSquare.length() != 2 || endSquare.length() != 2) {throw new Error("startSquare or endSquare isn't 2 chars long");}
+
+    char startChar1 = startSquare.charAt(0);
+    char startChar2 = startSquare.charAt(1);
+    char endChar1 = endSquare.charAt(0);
+    char endChar2 = endSquare.charAt(1);
+
+    this.pieceType = pieceType;
+    this.start_row = this.rankToRow(startChar2);
+    this.start_col = this.fileToCol(startChar1);
+    this.end_row = this.rankToRow(endChar2);
+    this.end_col = this.fileToCol(endChar1);
+    this.isCapture = isCapture;
+    this.isPromotion = isPromotion;
+  }
+
+  /////////////////////////////////////////////////////
+  //                    METHODS                      //
+  /////////////////////////////////////////////////////
 
   /**
    * Obtain the type of piece that is being moved
@@ -121,6 +181,14 @@ public class Move {
    */
   public boolean isCapture() {
     return this.isCapture;
+  }
+
+  /**
+   * Check if this move promotes a piece
+   * @return whether or not this move promotes a piece
+   */
+  public boolean isPromotion() {
+    return this.isPromotion;
   }
 
   /**
