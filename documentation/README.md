@@ -4,6 +4,7 @@ Author: Bryson Galapon (bgalapon@mit.edu)
 
 Helpful Commands:
   // Runs Main.java
+  >> ant
   >> sh run.sh
   >> ./run.sh
 

@@ -1,5 +1,7 @@
 package src.mouse_control;
 
+import src.datatypes.*;
+
 import java.awt.AWTException;
 import java.awt.MouseInfo;
 import java.awt.Robot;
@@ -17,7 +19,7 @@ public class Mouse_Control {
   private final double EPSILON = 0.05;
 
   // length of time between moves in ms
-  private int move_time_ms = 500;
+  private int move_time_ms = 1000;
   // length in pixels of a square
   private final int length_square;
   // mouse controller
@@ -35,6 +37,12 @@ public class Mouse_Control {
   // bottom right y coordinate of board
   private final int bottom_right_y;
 
+  /**
+   * Create a new Mouse_Control object to interface with browser
+   *  - Performs calibration to calculate square coordinates
+   *  @throws InterruptedException if Thread gets interrupted
+   *  @throws AWTException if the mouse hardware excepts
+   */
   public Mouse_Control() throws InterruptedException, AWTException{
     this.robot = new Robot();
 
@@ -79,36 +87,59 @@ public class Mouse_Control {
     this.yOffset = top_left_y+this.length_square/2;
   }
 
-  public void makeMove() throws InterruptedException {
-      int col = 4;
-      int row = 1;
-      moveMouseTo(col, row);
-      click();
+  /**
+   * Makes a move on the browser
+   * @param move move to send to browser
+   */
+  public void makeMove(Move move) throws InterruptedException {
+    // move to initial square and click to pick up piece
+    moveMouseTo(move.getStartCol(), move.getStartRow());
+    click();
 
-      // let chess gui catch up
-      Thread.sleep(move_time_ms);
+    // let chess gui catch up
+    Thread.sleep(move_time_ms);
 
-      col = 4;
-      row = 3;
-      moveMouseTo(col, row);
-      click();
+    // move to end square and click to drop piece
+    moveMouseTo(move.getEndCol(), move.getEndRow());
+    click();
   }
 
-  public void moveMouseTo(int col, int row) {
+  /**
+   * Moves the mouse to the center of the square defined by col
+   *  and row
+   * @param col 0-indexed column of square to move to
+   * @param row 0-indexed row of square to move to
+   */
+  private void moveMouseTo(int col, int row) {
       robot.mouseMove(col2X(col)+xOffset,row2Y(row)+yOffset);
   }
 
-  public void click() throws InterruptedException {
+  /**
+   * Performs a mouse click
+   */
+  private void click() throws InterruptedException {
       robot.mousePress(InputEvent.BUTTON1_MASK);
       Thread.sleep(1);
       robot.mouseRelease(InputEvent.BUTTON1_MASK);
   }
 
-  public int row2Y(int row) {
+  /**
+   * Converts a row into a pixel y-coordinate
+   * @param col 0-indexed row to convert
+   * @return the y-coordinate of the center of the row 
+   *          corresponding to col as per the calibration
+   */
+  private int row2Y(int row) {
     return (7-row)*length_square;
   }
 
-  public int col2X(int col) {
+  /**
+   * Converts a column into a pixel x-coordinate
+   * @param col 0-indexed column to convert
+   * @return the x-coordinate of the center of the column 
+   *          corresponding to col as per the calibration
+   */
+  private int col2X(int col) {
     return col*length_square;
   }
 }
