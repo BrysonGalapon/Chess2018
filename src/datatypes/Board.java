@@ -77,7 +77,7 @@ public class Board {
   }
 
   /**
-   * Create new Board
+   * Create new Board without a move or capture history
    * @param boardStr representation of position as described
    *                in the @see toString specification
    * @param turn the player (white or black) to next to move
@@ -104,48 +104,48 @@ public class Board {
       if (token.equals("-")) {
         // empty square, so do nothing
       } else {
-        switch(token) {
-          case "P":
-            this.board[row][col] = Piece.pawn(Color.WHITE);
-            break;
-          case "R":
-            this.board[row][col] = Piece.rook(Color.WHITE);
-            break;
-          case "N":
-            this.board[row][col] = Piece.knight(Color.WHITE);
-            break;
-          case "B":
-            this.board[row][col] = Piece.bishop(Color.WHITE);
-            break;
-          case "Q":
-            this.board[row][col] = Piece.queen(Color.WHITE);
-            break;
-          case "K":
-            this.board[row][col] = Piece.king(Color.WHITE);
-            break;
-          case "p":
-            this.board[row][col] = Piece.pawn(Color.BLACK);
-            break;
-          case "r":
-            this.board[row][col] = Piece.rook(Color.BLACK);
-            break;
-          case "n":
-            this.board[row][col] = Piece.knight(Color.BLACK);
-            break;
-          case "b":
-            this.board[row][col] = Piece.bishop(Color.BLACK);
-            break;
-          case "q":
-            this.board[row][col] = Piece.queen(Color.BLACK);
-            break;
-          case "k":
-            this.board[row][col] = Piece.king(Color.BLACK);
-            break;
-          default:
-            throw new Error(String.format("Unhandled token type: %s", token));
-        }
+        this.board[row][col] = token2Piece(token);
       }
+      col++;
+      if (col == 8) {
+        row--;
+        col = 0;
+      }
+    }
+  }
 
+  /**
+   * Create new Board with a move and capture history
+   * @param boardStr representation of position as described
+   *                in the @see toString specification
+   * @param moveHistory the list of moves (in order) that were played on this board
+   * @param capturedPieces the list of pieces (in order) that were captured
+   * @param turn the player (white or black) to next to move
+   */
+  public Board(String boardStr, Color turn, List<Move> moveHistory, List<Piece> capturedPieces) {
+    // create moves list
+    this.moveList = new LinkedList<Move>(moveHistory);
+    // create captured pieces list
+    this.capturedPieces = new LinkedList<Piece>(capturedPieces);
+    // create board
+    this.board = new Piece[NUM_ROWS][NUM_COLS];
+    // create legal move history
+    this.legalMoveHistory = new HashMap<String, Set<Move>>();
+
+    // set first turn to white
+    this.turn = turn;
+
+    // split, delimiting by double-spaces and newlines
+    String[] tokens = boardStr.split("  |\n");
+
+    int row = 7;
+    int col = 0;
+    for (String token : tokens) {
+      if (token.equals("-")) {
+        // empty square, so do nothing
+      } else {
+        this.board[row][col] = token2Piece(token);
+      }
       col++;
       if (col == 8) {
         row--;
@@ -159,9 +159,9 @@ public class Board {
    * @param row row of square to remove piece from
    * @param col column of square to remove piece from
    * @return the piece on that square, if it exists.
-   *         if the piece doesn't exist, return null
+   *         if a piece doesn't exist, return null
    */
-  public Piece clearSquare(int row, int col) {
+  private Piece clearSquare(int row, int col) {
     Piece piece = board[row][col];
     if (piece == null) {return null;}
 
@@ -203,7 +203,11 @@ public class Board {
    * Toggle the side to move from white to black, or black to white
    */
   public void toggleTurn() {
-    // TODO
+    if (this.getTurn().equals(Color.WHITE)) {
+      this.turn = Color.BLACK;
+    } else {
+      this.turn = Color.WHITE;
+    }
   }
 
   /**
@@ -218,6 +222,9 @@ public class Board {
    * Make a move on this board - does nothing if move is illegal
    */
   public void move(Move move) {
+    if (!legalMoves().contains(move)) {
+    }
+
     // TODO
     this.moveList.add(move);
   }
@@ -378,10 +385,48 @@ public class Board {
   public boolean equals(Object other) {
     if (!(other instanceof Board)) {return false;}
     Board otherBoard = (Board) other;
-    // TODO board is equivalent if same player to move
-    //        same pieces of same color occupy squares
-    //        same legal moves for all pieces
-    return false;
+    // board is equivalent if same player to move
+    //   same pieces of same color occupy squares
+    //   same legal moves for all pieces
+    return this.compressBoard().equals(otherBoard.compressBoard());
   }
+
+  /**
+   * Converts a token describing a piece into the an equivalent piece
+   * @param token the token as generated by @see toString for a piece
+   * @return a Piece that represents that token
+   */
+  private Piece token2Piece (String token) {
+    switch(token) {
+      case "P":
+        return Piece.pawn(Color.WHITE);
+      case "R":
+        return Piece.rook(Color.WHITE);
+      case "N":
+        return Piece.knight(Color.WHITE);
+      case "B":
+        return Piece.bishop(Color.WHITE);
+      case "Q":
+        return Piece.queen(Color.WHITE);
+      case "K":
+        return Piece.king(Color.WHITE);
+      case "p":
+        return Piece.pawn(Color.BLACK);
+      case "r":
+        return Piece.rook(Color.BLACK);
+      case "n":
+        return Piece.knight(Color.BLACK);
+      case "b":
+        return Piece.bishop(Color.BLACK);
+      case "q":
+        return Piece.queen(Color.BLACK);
+      case "k":
+        return Piece.king(Color.BLACK);
+      default:
+        throw new Error(String.format("Unhandled token type: %s", token));
+    }
+  }
+
+
 }
 

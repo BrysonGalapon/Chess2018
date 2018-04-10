@@ -8,8 +8,8 @@ public class Move {
   private final PieceType pieceType;
   // whether or not this move captures a piece
   private final boolean isCapture;
-  // whether or not this move involves a promotion
-  private final boolean isPromotion;
+  // piece that piecetype promotes to, if this move is a promotion
+  private final PieceType promotion;
   // row of start square of piece
   private final int start_row;
   // column of start square of piece
@@ -38,7 +38,7 @@ public class Move {
     this.end_row = end_row;
     this.end_col = end_col;
     this.isCapture = false;
-    this.isPromotion = false;
+    this.promotion = null;
   }
 
   /**
@@ -57,7 +57,7 @@ public class Move {
     this.end_row = end_row;
     this.end_col = end_col;
     this.isCapture = isCapture;
-    this.isPromotion = false;
+    this.promotion = null;
   }
 
 /**
@@ -68,16 +68,16 @@ public class Move {
    * @param end_row the 0-indexed row at which the piece ends up at
    * @param end_col the 0-indexed column at which the piece ends up at
    * @param isCapture whether or not this move captures a piece
-   * @param isPromotion whether or not this move involves a promotion
+   * @param promotion piece to promote to
    */
-  public Move(PieceType pieceType, int start_row, int start_col, int end_row, int end_col, boolean isCapture, boolean isPromotion) {
+  public Move(PieceType pieceType, int start_row, int start_col, int end_row, int end_col, boolean isCapture, PieceType promotion) {
     this.pieceType = pieceType;
     this.start_row = start_row;
     this.start_col = start_col;
     this.end_row = end_row;
     this.end_col = end_col;
     this.isCapture = isCapture;
-    this.isPromotion = isPromotion;
+    this.promotion = promotion;
   }
 
   /**
@@ -101,7 +101,7 @@ public class Move {
     this.end_row = this.rankToRow(endChar2);
     this.end_col = this.fileToCol(endChar1);
     this.isCapture = false;
-    this.isPromotion = false;
+    this.promotion = null;
   }
 
   /**
@@ -126,7 +126,7 @@ public class Move {
     this.end_row = this.rankToRow(endChar2);
     this.end_col = this.fileToCol(endChar1);
     this.isCapture = isCapture;
-    this.isPromotion = false;
+    this.promotion = null;
   }
 
   /**
@@ -135,10 +135,10 @@ public class Move {
    * @param startSquare the square in chess coordinates at which the piece starts at
    * @param endSquare the square in chess coordinates at which the piece ends at
    * @param isCapture whether or not this move captures a piece
-   * @param isPromotion whether or not this move involves a promotion
+   * @param promotion piece that pieceType promotes to
    * @throws Error if either startSquare or endSquare is an invalid coordinate
    */
-  public Move(PieceType pieceType, String startSquare, String endSquare, boolean isCapture, boolean isPromotion) {
+  public Move(PieceType pieceType, String startSquare, String endSquare, boolean isCapture, PieceType promotion) {
     if (startSquare.length() != 2 || endSquare.length() != 2) {throw new Error("startSquare or endSquare isn't 2 chars long");}
 
     char startChar1 = startSquare.charAt(0);
@@ -152,7 +152,7 @@ public class Move {
     this.end_row = this.rankToRow(endChar2);
     this.end_col = this.fileToCol(endChar1);
     this.isCapture = isCapture;
-    this.isPromotion = isPromotion;
+    this.promotion = promotion;
   }
 
   /////////////////////////////////////////////////////
@@ -188,7 +188,15 @@ public class Move {
    * @return whether or not this move promotes a piece
    */
   public boolean isPromotion() {
-    return this.isPromotion;
+    return (this.promotion == null);
+  }
+
+  /**
+   * Obtain the piece that the piece being moved promotes into
+   * @return the piece that the piece being moved promotes into
+   */
+  public PieceType getPromotion() {
+    return this.promotion;
   }
 
   /**
@@ -415,7 +423,9 @@ public class Move {
     int startColHash = this.getStartCol();
     int endRowHash = this.getEndRow();
     int endColHash = this.getEndCol();
-    return pieceHash^(startRowHash+(startColHash*endRowHash^endColHash));
+    int capture = this.isCapture() ? 12 : 82;
+    int promotion = this.getPromotion().hashCode();
+    return pieceHash^(startRowHash+(startColHash*endRowHash^endColHash))+capture^promotion;
   }
 
   @Override
@@ -427,6 +437,8 @@ public class Move {
     boolean sameStartCol = this.getStartCol() == otherMove.getStartCol();
     boolean sameEndRow = this.getEndRow() == otherMove.getEndRow();
     boolean sameEndCol = this.getEndCol() == otherMove.getEndCol();
-    return samePieceType && sameStartRow && sameStartCol && sameEndRow && sameEndCol;
+    boolean sameCaptures = this.isCapture() == otherMove.isCapture();
+    boolean samePromotion = this.getPromotion() == otherMove.getPromotion();
+    return samePieceType && sameStartRow && sameStartCol && sameEndRow && sameEndCol && sameCaptures && samePromotion;
   }
 }

@@ -19,7 +19,7 @@ public class Mouse_Control {
   private final double EPSILON = 0.05;
 
   // length of time between moves in ms
-  private int move_time_ms = 1000;
+  private int move_time_ms = 1500;
   // length in pixels of a square
   private final int length_square;
   // mouse controller
@@ -40,6 +40,9 @@ public class Mouse_Control {
   /**
    * Create a new Mouse_Control object to interface with browser
    *  - Performs calibration to calculate square coordinates
+   *  - To do calibration, hover over top left corner of board
+   *      until first snapshot, then hover over bottom right
+   *      corner of board until second snapshot
    *  @throws InterruptedException if Thread gets interrupted
    *  @throws AWTException if the mouse hardware excepts
    */
