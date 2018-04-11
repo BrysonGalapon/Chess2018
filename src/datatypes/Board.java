@@ -222,11 +222,65 @@ public class Board {
    * Make a move on this board - does nothing if move is illegal
    */
   public void move(Move move) {
-    if (!legalMoves().contains(move)) {
+//    if (!legalMoves().contains(move)) {
+//      // don't do anything if move isn't legal
+//      // NOTE: might choose to remove this check when
+//      //        code that is using board class is verified
+//      //        to not give illegal moves - this will
+//      //        improve performance
+//      return;
+//    }
+
+    // determine whether move is one of:
+    //  - en passent
+    //  - castle
+    //  - promotion
+    // otherwise, the move is a regular type of move
+
+    if (isEnPassent(move)) {
+
+    } else if (move.isCastleMove()) {
+    } else if (move.isPromotion()) {
+      // create the piece to promote to
+      Piece promotedPiece = Piece.newPiece(move.getPromotion(), getTurn());
+
+      // clear the square piece is being moved to
+      int endRow = move.getEndRow();
+      int endCol = move.getEndCol();
+      Piece clearedPiece = clearSquare(endRow, endCol);
+      // if that square contained a piece, add it to captured list
+      if (move.isCapture()) {
+        this.capturedPieces.add(clearedPiece);
+      }
+
+      // remove piece on starting square (just drop it)
+      // NOTE: Could choose to store piece in a 'promotedPieces' 
+      //        list so one does not need to create new Pawn
+      //        objects when undo-ing a promotion. Unclear 
+      //        if this will be a performance boost or not
+      clearSquare(move.getStartRow(), move.getStartCol());
+
+      addPiece(promotedPiece, endRow, endCol);
+    } else {
+      // clear the square piece is being moved to
+      int endRow = move.getEndRow();
+      int endCol = move.getEndCol();
+      Piece clearedPiece = clearSquare(endRow, endCol);
+      // if that square contained a piece, add it to captured list
+      if (move.isCapture()) {
+        this.capturedPieces.add(clearedPiece);
+      }
+
+      // clear the square containing the piece being moved
+      Piece movingPiece = clearSquare(move.getStartRow(), move.getStartCol());
+      // place the piece at target square
+      addPiece(movingPiece, endRow, endCol);
     }
 
-    // TODO
+    // update the moveList to record the move just played
     this.moveList.add(move);
+    // toggle the turn of the current player
+    this.toggleTurn();
   }
 
   /**
@@ -425,6 +479,42 @@ public class Board {
       default:
         throw new Error(String.format("Unhandled token type: %s", token));
     }
+  }
+
+  /**
+   * Checks if a given move played currently on this board
+   *  is an en passent move
+   *  @param move the move to be currently played 
+   *  @return true iff this move is legal and when played will
+   *            result in en passent on the current board state
+   */
+  private boolean isEnPassent(Move move) {
+    // check if piece being moved is a pawn and is a capture
+    if (!move.getPieceType().equals(PieceType.PAWN) || !move.isCapture()) {return false;}
+    Move lastMove = getLastMove();
+    // check if any moves has been played
+    if (lastMove == null) {return false;}
+    // check if the last move was a pawn move
+    if (!lastMove.getPieceType().equals(PieceType.PAWN)) {return false;}
+    // check if the last move's pawn moved two steps
+    int lastMoveEndRow = lastMove.getEndRow();
+    int lastMoveStartRow = lastMove.getStartRow();
+    if (Math.abs(lastMoveEndRow-lastMoveStartRow) != 2) {return false;}
+    // check if last move's pawn move landed adjacent to starting
+    //  square of move
+    if ((lastMoveEndRow != move.getStartRow()) || Math.abs(lastMove.getEndCol()-move.getStartCol()) != 1) {return false;}
+
+    return true;
+  }
+
+  /**
+   * Places a piece onto the board at a specified row and column
+   * @param piece the piece to place
+   * @param row row to place the place piece at
+   * @param col column to place the place piece at
+   */
+  private void addPiece(Piece piece, int row, int col) {
+    this.board[row][col] = piece;
   }
 
 

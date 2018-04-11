@@ -188,12 +188,13 @@ public class Move {
    * @return whether or not this move promotes a piece
    */
   public boolean isPromotion() {
-    return (this.promotion == null);
+    return (this.promotion != null);
   }
 
   /**
    * Obtain the piece that the piece being moved promotes into
-   * @return the piece that the piece being moved promotes into
+   * @return the piece that the piece being moved promotes into.
+   *          if this move isn't a promotion, returns null
    */
   public PieceType getPromotion() {
     return this.promotion;
@@ -424,7 +425,7 @@ public class Move {
     int endRowHash = this.getEndRow();
     int endColHash = this.getEndCol();
     int capture = this.isCapture() ? 12 : 82;
-    int promotion = this.getPromotion().hashCode();
+    int promotion = (this.getPromotion() != null) ? this.getPromotion().hashCode() : 7;
     return pieceHash^(startRowHash+(startColHash*endRowHash^endColHash))+capture^promotion;
   }
 

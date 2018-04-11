@@ -9,7 +9,40 @@ public interface Piece {
    */
 
   /**
+   * Obtain a new piece of type pieceType and Color color
+   * @param pieceType the type of piece to create
+   * @param color the color of the piece to create
+   * @return a piece of type pieceType and color color
+   */
+  public static Piece newPiece(PieceType pieceType, Color color) {
+    switch(pieceType) {
+      case PAWN:
+        return pawn(color);
+
+      case ROOK:
+        return rook(color);
+
+      case KNIGHT:
+        return knight(color);
+
+      case BISHOP:
+        return bishop(color);
+
+      case QUEEN:
+        return queen(color);
+
+      case KING:
+        return king(color);
+
+      default:
+        throw new Error("Unexpected PieceType input");
+    }
+  }
+
+  /**
    * Obtain a new pawn
+   * @param color the color of the piece to create
+   * @return a pawn of color color
    */
   public static Piece pawn(Color color) {
     return new Pawn(color);
@@ -17,6 +50,8 @@ public interface Piece {
 
   /**
    * Obtain a new rook
+   * @param color the color of the piece to create
+   * @return a rook of color color
    */
   public static Piece rook(Color color) {
     return new Rook(color);
@@ -24,6 +59,8 @@ public interface Piece {
 
   /**
    * Obtain a new knight
+   * @param color the color of the piece to create
+   * @return a knight of color color
    */
   public static Piece knight(Color color) {
     return new Knight(color);
@@ -31,6 +68,8 @@ public interface Piece {
 
   /**
    * Obtain a new bishop
+   * @param color the color of the piece to create
+   * @return a bishop of color color
    */
   public static Piece bishop(Color color) {
     return new Bishop(color);
@@ -38,6 +77,8 @@ public interface Piece {
 
   /**
    * Obtain a new queen
+   * @param color the color of the piece to create
+   * @return a queen of color color
    */
   public static Piece queen(Color color) {
     return new Queen(color);
@@ -45,6 +86,8 @@ public interface Piece {
 
   /**
    * Obtain a new king
+   * @param color the color of the piece to create
+   * @return a king of color color
    */
   public static Piece king(Color color) {
     return new King(color);

@@ -1,5 +1,6 @@
 import static org.junit.Assert.*;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import java.util.*;
 import java.io.*;
@@ -215,6 +216,117 @@ public class BoardTests {
     Set<Move> expectedLegalMoves = new HashSet<>(Arrays.asList(move1, move2, move3, move4, move5, move6, move7, move8));
 
     assertEquals("Only king moves with a capture on d5 are the set of legal moves", expectedLegalMoves, legalMoves);
+  }
+
+  @Test
+  public void testLegalMovesOutOfCheck1Move() {
+    String boardStr = "-  -  -  -  r  r  -  k" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  b  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  K  -  -  -";
+
+    Board board = new Board(boardStr, Color.WHITE);
+    Set<Move> legalMoves = board.legalMoves();
+    assertEquals("Only 1 king move possible", 1, legalMoves.size());
+
+    Move move = new Move(PieceType.KING, "e1", "d2");
+    assertTrue("Only Kd2 is possible", legalMoves.contains(move));
+  }
+
+  @Test
+  public void testLegalMovesOutOfCheckBlock() {
+    String boardStr = "-  -  -  r  r  r  -  k" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  R  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  K  -  -  -";
+
+    Board board = new Board(boardStr, Color.WHITE);
+    Set<Move> legalMoves = board.legalMoves();
+    assertEquals("Only 1 rook block possible", 1, legalMoves.size());
+
+    Move move = new Move(PieceType.ROOK, "c2", "e2");
+    assertTrue("Only Re2 is possible", legalMoves.contains(move));
+  }
+
+  @Test
+  public void testLegalMovesOutOfCheckCapture() {
+    String boardStr = "-  -  -  -  -  -  -  k" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  R  Q" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  q  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  K";
+
+    Board board = new Board(boardStr, Color.BLACK);
+    Set<Move> legalMoves = board.legalMoves();
+    assertEquals("Only 1 move", 1, legalMoves.size());
+
+    Move move = new Move(PieceType.QUEEN, "f4", "h6");
+    assertTrue("Only Qxh6 is possible", legalMoves.contains(move));
+  }
+
+  @Test
+  public void testLegalMovesOutOfCheckPawnBlock() {
+    String boardStr = "-  -  -  -  -  R  -  -" + "\n" +
+                      "-  -  -  -  -  -  p  k" + "\n" + 
+                      "-  -  -  -  -  R  -  -" + "\n" + 
+                      "-  -  -  -  -  B  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  K";
+
+    Board board = new Board(boardStr, Color.BLACK);
+    Set<Move> legalMoves = board.legalMoves();
+    assertEquals("Only 1 move", 1, legalMoves.size());
+
+    Move move = new Move(PieceType.PAWN, "g7", "g6");
+    assertTrue("Only g6 is possible", legalMoves.contains(move));
+  }
+
+  @Test
+  public void testLegalMovesCantMovePinnedPiece() {
+    String boardStr = "-  -  R  -  q  k  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  Q  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  K";
+
+    Board board = new Board(boardStr, Color.BLACK);
+    Set<Move> legalMoves = board.legalMoves();
+    assertEquals("Only 1 move", 1, legalMoves.size());
+
+    Move move = new Move(PieceType.KING, "f8", "g8");
+    assertTrue("Only Kg8 is possible", legalMoves.contains(move));
+  }
+
+  @Test
+  public void testLegalMovesCheckmate() {
+    String boardStr = "k  r  -  -  -  -  -  -" + "\n" +
+                      "p  p  N  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  K";
+
+    Board board = new Board(boardStr, Color.BLACK);
+    Set<Move> legalMoves = board.legalMoves();
+    assertEquals("No legal moves", 0, legalMoves.size());
   }
 
   @Test
@@ -434,7 +546,7 @@ public class BoardTests {
   }
 
   @Test
-  public void testLegalMovesEnPassentNotValid() {
+  public void testLegalMovesEnPassentNotValid1() {
     Move lastMove = new Move(PieceType.KING, "d2", "e1");
     
     List<Move> moveList = new ArrayList<Move>(Arrays.asList());
@@ -448,7 +560,33 @@ public class BoardTests {
                       "-  -  -  -  -  -  -  -" + "\n" + 
                       "-  -  -  -  K  -  -  -";
 
-    Board board = new Board(boardStr, Color.BLACK, moveList, capturedPieces);
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedPieces);
+ 
+    Set<Move> legalMoves = board.legalMoves();
+
+    assertEquals("Only 13 legal moves (3 king moves + 10 rook moves) are allowed in position setup", 13, legalMoves.size());
+
+    Move enPassent = new Move(PieceType.PAWN, "a5", "a6");
+
+    assertFalse("En passent should be illegal", legalMoves.contains(enPassent));
+  }
+
+  @Test
+  public void testLegalMovesEnPassentNotValid2() {
+    Move lastMove = new Move(PieceType.PAWN, "b6", "b5");
+    
+    List<Move> moveList = new ArrayList<Move>(Arrays.asList());
+    List<Piece> capturedPieces = new ArrayList<Piece>();
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "P  p  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  K  -  -  -";
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedPieces);
  
     Set<Move> legalMoves = board.legalMoves();
 
@@ -518,8 +656,62 @@ public class BoardTests {
   }
 
   @Test
+  public void testUndoLastMoveMovedRook() {
+    String boardStr = "-  k  -  -  -  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "R  -  -  -  K  -  -  R";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+    String rep1 = board.compressBoard();
+
+    Move rookMove = new Move(PieceType.ROOK, "a1", "a4");
+
+    board.move(rookMove);
+    board.undoLastMove();
+
+    String rep2 = board.compressBoard();
+ 
+    assertEquals("Expected same position after undoing rook move", rep1, rep2);
+  }
+
+  @Test
+  public void testUndoLastMoveMovedKing() {
+    String boardStr = "-  k  -  -  -  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "R  -  -  -  K  -  -  R";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+    String rep1 = board.compressBoard();
+
+    Move kingMove = new Move(PieceType.KING, "e1", "e2");
+
+    board.move(kingMove);
+    board.undoLastMove();
+
+    String rep2 = board.compressBoard();
+ 
+    assertEquals("Expected same position after undoing king move", rep1, rep2);
+  }
+
+  @Test
   public void testUndoLastMoveCastlingWhite() {
-    String boardStr = "k  -  -  -  -  -  -  -" + "\n" +
+    String boardStr = "-  k  -  -  -  -  -  -" + "\n" +
                       "-  -  -  -  -  -  -  -" + "\n" + 
                       "-  -  -  -  -  -  -  -" + "\n" + 
                       "-  -  -  -  -  -  -  -" + "\n" + 
@@ -542,6 +734,60 @@ public class BoardTests {
     String rep2 = board.compressBoard();
  
     assertEquals("Expected same position after undoing castling", rep1, rep2);
+  }
+
+  @Test
+  public void testUndoLastMovePromote() {
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "P  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  K";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+    String rep1 = board.compressBoard();
+
+    Move promote = new Move(PieceType.PAWN, "a7", "a8", false, PieceType.ROOK);
+
+    board.move(promote);
+    board.undoLastMove();
+
+    String rep2 = board.compressBoard();
+ 
+    assertEquals("Expected same position after undoing promotion", rep1, rep2);
+  }
+
+  @Test
+  public void testUndoLastMovePromoteCapture() {
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  p  -  -  -  -  -" + "\n" + 
+                      "-  R  -  -  -  -  -  K";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.BLACK, moveList, capturedList);
+    String rep1 = board.compressBoard();
+
+    Move promote = new Move(PieceType.PAWN, "c2", "b1", true, PieceType.BISHOP);
+
+    board.move(promote);
+    board.undoLastMove();
+
+    String rep2 = board.compressBoard();
+ 
+    assertEquals("Expected same position after undoing promotion", rep1, rep2);
   }
 
   @Test
@@ -571,77 +817,626 @@ public class BoardTests {
     assertEquals("Expected same position after undoing castling", rep1, rep2);
   }
 
+  @Test
+  public void testMovePawn1Step() {
+    String boardStr = "r  -  -  -  k  -  -  r" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "P  -  -  -  -  -  -  -" + "\n" + 
+                      "R  -  -  -  K  -  -  R";
+
+    String expected = "r  -  -  -  k  -  -  r" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "P  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "R  -  -  -  K  -  -  R";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+
+    Move pawnMove = new Move(PieceType.PAWN, "a2", "a3");
+
+    board.move(pawnMove);
+ 
+    assertEquals("Expected position after pawn move", expected, board.toString());
+  }
+
+  @Test
+  public void testMovePawn2Steps() {
+    String boardStr = "r  -  -  -  k  -  -  r" + "\n" +
+                      "-  -  -  -  -  p  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "P  -  -  -  -  -  -  -" + "\n" + 
+                      "R  -  -  -  K  -  -  R";
+
+    String expected = "r  -  -  -  k  -  -  r" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  p  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "P  -  -  -  -  -  -  -" + "\n" + 
+                      "R  -  -  -  K  -  -  R";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.BLACK, moveList, capturedList);
+
+    Move pawnMove = new Move(PieceType.PAWN, "f7", "f5");
+
+    board.move(pawnMove);
+ 
+    assertEquals("Expected position after pawn move", expected, board.toString());
+  }
+
+  @Test
+  public void testMovePieceQueen() {
+    String boardStr = "r  -  -  -  k  -  -  r" + "\n" +
+                      "-  -  q  -  -  p  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "P  -  -  -  -  -  -  -" + "\n" + 
+                      "R  -  -  -  K  -  -  R";
+
+    String expected = "r  -  -  -  k  -  -  r" + "\n" +
+                      "-  -  -  -  -  p  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "P  -  -  -  -  -  -  q" + "\n" + 
+                      "R  -  -  -  K  -  -  R";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.BLACK, moveList, capturedList);
+
+    Move queenMove = new Move(PieceType.QUEEN, "c7", "h2");
+
+    board.move(queenMove);
+ 
+    assertEquals("Expected position after Qh2", expected, board.toString());
+  }
+
+  @Test
+  public void testMovePieceKnight() {
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  N  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  K  -  -  -";
+
+    String expected = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  N  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  K  -  -  -";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+
+    Move pieceMove = new Move(PieceType.KNIGHT, "b3", "c5");
+
+    board.move(pieceMove);
+ 
+    assertEquals("Expected position after Nc5", expected, board.toString());
+  }
+
+  @Test
+  public void testMovePieceRooK() {
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  q  -  -  -  R" + "\n" + 
+                      "-  -  -  -  K  -  -  -";
+
+    String expected = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  R  -  -  -  -" + "\n" + 
+                      "-  -  -  -  K  -  -  -";
+
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+
+    Move pieceMove = new Move(PieceType.ROOK, "h2", "d2", true);
+
+    board.move(pieceMove);
+ 
+    assertEquals("Expected position after Rxd2", expected, board.toString());
+  }
+
+  @Test
+  public void testMovePieceCapture() {
+    String boardStr = "r  -  -  -  k  -  -  r" + "\n" +
+                      "-  -  -  -  -  p  -  -" + "\n" + 
+                      "-  -  b  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "P  -  -  -  -  -  -  -" + "\n" + 
+                      "R  -  -  -  K  -  -  R";
+
+    String expected = "r  -  -  -  k  -  -  r" + "\n" +
+                      "-  -  -  -  -  p  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "P  -  -  -  -  -  -  -" + "\n" + 
+                      "R  -  -  -  K  -  -  b";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.BLACK, moveList, capturedList);
+
+    Move pieceMove = new Move(PieceType.BISHOP, "c6", "h1", true);
+
+    board.move(pieceMove);
+ 
+    assertEquals("Expected position after Bxh1", expected, board.toString());
+  }
+
+  @Test
+  public void testMoveEnPassent() {
+    String boardStr = "r  -  -  -  k  -  -  r" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  P  p  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  Q  K  -  -  R";
+
+    String expected = "r  -  -  -  k  -  -  r" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  P  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  Q  K  -  -  R";
+
+
+    Move lastMove = new Move(PieceType.PAWN, "d7", "d5");
+    List<Move> moveList = new ArrayList<>(Arrays.asList(lastMove));
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+
+    Move enPassent = new Move(PieceType.PAWN, "c5", "d6", true);
+
+    board.move(enPassent);
+ 
+    assertEquals("Expected enpassent to work", expected, board.toString());
+  }
+
+  @Test
+  public void testMovePromotion1() {
+    String boardStr = "r  -  -  -  k  q  -  r" + "\n" +
+                      "-  -  -  -  -  -  P  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  K  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    String expected = "r  -  -  -  k  q  Q  r" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  K  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+
+    Move pieceMove = new Move(PieceType.PAWN, "g7", "g8", false, PieceType.QUEEN);
+
+    board.move(pieceMove);
+ 
+    assertEquals("Expected promotion to queen to work", expected, board.toString());
+  }
+
+  @Test
+  public void testMovePromotionCapture() {
+    String boardStr = "r  -  -  -  k  q  -  r" + "\n" +
+                      "-  -  -  -  -  -  P  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  K  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    String expected = "r  -  -  -  k  R  -  r" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  K  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+
+    Move pieceMove = new Move(PieceType.PAWN, "g7", "f8", true, PieceType.ROOK);
+
+    board.move(pieceMove);
+ 
+    assertEquals("Expected promotion to rook to work", expected, board.toString());
+  }
+
+  @Test
+  public void testMovePromotionCaptureBlack() {
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  K  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  p  -" + "\n" + 
+                      "-  -  -  -  -  -  -  N";
+
+    String expected = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  K  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  b";
+
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.BLACK, moveList, capturedList);
+
+    Move pieceMove = new Move(PieceType.PAWN, "g2", "h1", true, PieceType.BISHOP);
+
+    board.move(pieceMove);
+ 
+    assertEquals("Expected promotion capture to work", expected, board.toString());
+  }
+
+  @Test
+  public void testMoveCastlingKingside() {
+    String boardStr = "-  -  -  -  k  -  -  r" + "\n" +
+                      "-  -  -  -  -  p  p  p" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  K  -  -  -";
+
+    String expected = "-  -  -  -  -  r  k  -" + "\n" +
+                      "-  -  -  -  -  p  p  p" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  K  -  -  -";
+
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.BLACK, moveList, capturedList);
+
+    Move pieceMove = new Move(PieceType.KING, "e8", "g8");
+
+    board.move(pieceMove);
+ 
+    assertEquals("Expected castling to work", expected, board.toString());
+  }
+
+  @Test
+  public void testMoveCastlingQueenside() {
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "P  P  P  P  -  -  -  -" + "\n" + 
+                      "R  -  -  -  K  -  -  -";
+
+    String expected = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "P  P  P  P  -  -  -  -" + "\n" + 
+                      "-  -  K  R  -  -  -  -";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+
+    Move pieceMove = new Move(PieceType.KING, "e1", "c1");
+
+    board.move(pieceMove);
+ 
+    assertEquals("Expected castling to work", expected, board.toString());
+  }
+
+  @Test
+  public void testMoveInvalidMovePieceJumps() {
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  R  -  -  -  -" + "\n" + 
+                      "-  -  B  -  -  -  -  -" + "\n" + 
+                      "-  -  K  -  -  -  -  -";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+
+    Move pieceMove = new Move(PieceType.BISHOP, "c2", "e4");
+
+    board.move(pieceMove);
+ 
+    assertEquals("Bishop can't jump over pieces", boardStr, board.toString());
+  }
+
+  @Test
+  public void testMoveInvalidMovePawnJump() {
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  p  -  -  -  -  -" + "\n" + 
+                      "-  -  B  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  K  -  -  -  -  -";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.BLACK, moveList, capturedList);
+
+    Move pieceMove = new Move(PieceType.PAWN, "c7", "c5");
+
+    board.move(pieceMove);
+ 
+    assertEquals("Pawn can't jump over pieces", boardStr, board.toString());
+  }
+
+  @Test
+  public void testMoveInvalidMoveCantCaptureOwn() {
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  B  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  R  -  -  -  -  -" + "\n" + 
+                      "-  -  K  -  -  -  -  -";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+
+    Move pieceMove1 = new Move(PieceType.ROOK, "c2", "c4");
+    Move pieceMove2 = new Move(PieceType.ROOK, "c2", "c4", true);
+
+    board.move(pieceMove1);
+    assertEquals("Rook can't move on same color piece", boardStr, board.toString());
+
+    board.move(pieceMove2);
+    assertEquals("Rook can't capture same color piece", boardStr, board.toString());
+  }
+
+  @Test
+  public void testMoveInvalidMoveCantCaptureBeyond() {
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  q  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  P  -  -  -" + "\n" + 
+                      "-  -  -  B  -  -  -  -" + "\n" + 
+                      "-  -  K  -  -  -  -  -";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+
+    Move pieceMove = new Move(PieceType.BISHOP, "d2", "g5", true);
+
+    board.move(pieceMove);
+    assertEquals("Can't capture beyond same color piece", boardStr, board.toString());
+  }
+
+  @Test
+  public void testMoveDoubleCheck() {
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  N  -  -  -" + "\n" + 
+                      "-  -  -  -  Q  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  K  -  -  -  -  -";
+
+    String expected = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  N  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  Q  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  K  -  -  -  -  -";
+
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+
+    Move pieceMove = new Move(PieceType.KNIGHT, "d6", "g7");
+
+    board.move(pieceMove);
+    assertEquals("Expected double check to be legal", expected, board.toString());
+  }
+
+  @Test
+  public void testMoveCounterCheck() {
+    String boardStr = "-  k  -  -  -  -  -  -" + "\n" +
+                      "-  r  -  p  -  -  -  K" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  Q  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    String expected = "-  k  -  -  -  -  -  -" + "\n" +
+                      "-  r  -  -  -  -  -  K" + "\n" + 
+                      "-  -  -  p  -  -  -  -" + "\n" + 
+                      "-  -  -  -  Q  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.BLACK, moveList, capturedList);
+
+    Move pieceMove = new Move(PieceType.PAWN, "d7", "d6");
+
+    board.move(pieceMove);
+    assertEquals("Expected counter-check to be legal", expected, board.toString());
+  }
 
   ////////////////////////////////////////////////////
   //              PERFORMANCE TESTS                 //
   ////////////////////////////////////////////////////
 
-  //@Test
-  //public void testLegalMovesTiming90Percent() {
-  //  Board board = new Board();
+  @Ignore("Performance test")
+  @Test
+  public void testLegalMovesTiming90Percent() {
+    Board board = new Board();
 
-  //  long start_first_call = System.currentTimeMillis();
-  //  board.legalMoves();
-  //  long end_first_call = System.currentTimeMillis();
+    long start_first_call = System.currentTimeMillis();
+    board.legalMoves();
+    long end_first_call = System.currentTimeMillis();
 
-  //  long start_second_call = System.currentTimeMillis();
-  //  board.legalMoves();
-  //  long end_second_call = System.currentTimeMillis();
+    long start_second_call = System.currentTimeMillis();
+    board.legalMoves();
+    long end_second_call = System.currentTimeMillis();
 
-  //  long first_call_length = end_first_call-start_first_call;
-  //  long second_call_length = end_second_call-start_second_call;
-  //  assertTrue(String.format("second call (%d ms) isn't faster than first call (%d ms) by 90 percent", second_call_length, first_call_length), second_call_length < 0.90*first_call_length);
-  //}
+    long first_call_length = end_first_call-start_first_call;
+    long second_call_length = end_second_call-start_second_call;
+    assertTrue(String.format("second call (%d ms) isn't faster than first call (%d ms) by 90 percent", second_call_length, first_call_length), second_call_length < 0.90*first_call_length);
+  }
 
-  //@Test
-  //public void testLegalMovesTiming50Percent() {
-  //  Board board = new Board();
+  @Ignore("Performance test")
+  @Test
+  public void testLegalMovesTiming50Percent() {
+    Board board = new Board();
 
-  //  long start_first_call = System.currentTimeMillis();
-  //  board.legalMoves();
-  //  long end_first_call = System.currentTimeMillis();
+    long start_first_call = System.currentTimeMillis();
+    board.legalMoves();
+    long end_first_call = System.currentTimeMillis();
 
-  //  long start_second_call = System.currentTimeMillis();
-  //  board.legalMoves();
-  //  long end_second_call = System.currentTimeMillis();
+    long start_second_call = System.currentTimeMillis();
+    board.legalMoves();
+    long end_second_call = System.currentTimeMillis();
 
-  //  long first_call_length = end_first_call-start_first_call;
-  //  long second_call_length = end_second_call-start_second_call;
-  //  assertTrue(String.format("second call (%d ms) isn't faster than first call (%d ms) by 50 percent", second_call_length, first_call_length), second_call_length < 0.50*first_call_length);
-  //}
+    long first_call_length = end_first_call-start_first_call;
+    long second_call_length = end_second_call-start_second_call;
+    assertTrue(String.format("second call (%d ms) isn't faster than first call (%d ms) by 50 percent", second_call_length, first_call_length), second_call_length < 0.50*first_call_length);
+  }
 
-  //@Test
-  //public void testLegalMovesTiming10Percent() {
-  //  Board board = new Board();
+  @Ignore("Performance test")
+  @Test
+  public void testLegalMovesTiming10Percent() {
+    Board board = new Board();
 
-  //  long start_first_call = System.currentTimeMillis();
-  //  board.legalMoves();
-  //  long end_first_call = System.currentTimeMillis();
+    long start_first_call = System.currentTimeMillis();
+    board.legalMoves();
+    long end_first_call = System.currentTimeMillis();
 
-  //  long start_second_call = System.currentTimeMillis();
-  //  board.legalMoves();
-  //  long end_second_call = System.currentTimeMillis();
+    long start_second_call = System.currentTimeMillis();
+    board.legalMoves();
+    long end_second_call = System.currentTimeMillis();
 
-  //  long first_call_length = end_first_call-start_first_call;
-  //  long second_call_length = end_second_call-start_second_call;
-  //  assertTrue(String.format("second call (%d ms) isn't faster than first call (%d ms) by 10 percent", second_call_length, first_call_length), second_call_length < 0.10*first_call_length);
-  //}
+    long first_call_length = end_first_call-start_first_call;
+    long second_call_length = end_second_call-start_second_call;
+    assertTrue(String.format("second call (%d ms) isn't faster than first call (%d ms) by 10 percent", second_call_length, first_call_length), second_call_length < 0.10*first_call_length);
+  }
 
-  //@Test
-  //public void testLegalMovesTiming05Percent() {
-  //  Board board = new Board();
+  @Ignore("Performance test")
+  @Test
+  public void testLegalMovesTiming05Percent() {
+    Board board = new Board();
 
-  //  long start_first_call = System.currentTimeMillis();
-  //  board.legalMoves();
-  //  long end_first_call = System.currentTimeMillis();
+    long start_first_call = System.currentTimeMillis();
+    board.legalMoves();
+    long end_first_call = System.currentTimeMillis();
 
-  //  long start_second_call = System.currentTimeMillis();
-  //  board.legalMoves();
-  //  long end_second_call = System.currentTimeMillis();
+    long start_second_call = System.currentTimeMillis();
+    board.legalMoves();
+    long end_second_call = System.currentTimeMillis();
 
-  //  long first_call_length = end_first_call-start_first_call;
-  //  long second_call_length = end_second_call-start_second_call;
-  //  assertTrue(String.format("second call (%d ms) isn't faster than first call (%d ms) by 5 percent", second_call_length, first_call_length), second_call_length < 0.05*first_call_length);
-  //}
-
+    long first_call_length = end_first_call-start_first_call;
+    long second_call_length = end_second_call-start_second_call;
+    assertTrue(String.format("second call (%d ms) isn't faster than first call (%d ms) by 5 percent", second_call_length, first_call_length), second_call_length < 0.05*first_call_length);
+  }
 }
