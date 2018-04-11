@@ -200,17 +200,6 @@ public class Board {
   }
 
   /**
-   * Toggle the side to move from white to black, or black to white
-   */
-  public void toggleTurn() {
-    if (this.getTurn().equals(Color.WHITE)) {
-      this.turn = Color.BLACK;
-    } else {
-      this.turn = Color.WHITE;
-    }
-  }
-
-  /**
    * Undoes the last move played on this board - does nothing
    *  if there are no more moves to undo
    */
@@ -220,6 +209,8 @@ public class Board {
 
   /**
    * Make a move on this board - does nothing if move is illegal
+   *  - if move is legal, toggles player turn
+   * @param move move to be played on this board
    */
   public void move(Move move) {
 //    if (!legalMoves().contains(move)) {
@@ -515,6 +506,17 @@ public class Board {
    */
   private void addPiece(Piece piece, int row, int col) {
     this.board[row][col] = piece;
+  }
+
+  /**
+   * Toggle the side to move from white to black, or black to white
+   */
+  private void toggleTurn() {
+    if (this.getTurn().equals(Color.WHITE)) {
+      this.turn = Color.BLACK;
+    } else {
+      this.turn = Color.WHITE;
+    }
   }
 
 

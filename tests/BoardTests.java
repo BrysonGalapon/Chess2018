@@ -1364,6 +1364,160 @@ public class BoardTests {
     assertEquals("Expected counter-check to be legal", expected, board.toString());
   }
 
+  @Test
+  public void testGetTurnInit() {
+    Board board = new Board();
+    assertEquals("Expected initial turn to be white", Color.WHITE, board.getTurn());
+  }
+
+  @Test
+  public void testGetTurnConstructorWhite() {
+    String boardStr = "-  k  -  -  -  -  -  -" + "\n" +
+                      "-  r  -  p  -  -  -  K" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  Q  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    Board board = new Board(boardStr, Color.WHITE, new ArrayList<Move>(), new ArrayList<Piece>());
+    assertEquals("Expected turn to be white given input", Color.WHITE, board.getTurn());
+  }
+
+  @Test
+  public void testGetTurnConstructorBlack() {
+    String boardStr = "-  k  -  -  -  -  -  -" + "\n" +
+                      "-  r  -  p  -  -  -  K" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  Q  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    Board board = new Board(boardStr, Color.BLACK, new ArrayList<Move>(), new ArrayList<Piece>());
+    assertEquals("Expected turn to be black given input", Color.BLACK, board.getTurn());
+  }
+
+  @Test
+  public void testGetTurn1Move() {
+    Board board = new Board();
+
+    Move move1 = new Move(PieceType.PAWN, "b2","b4");
+
+    board.move(move1);
+
+    assertEquals("Expected turn to be black after first move", Color.BLACK, board.getTurn());
+  }
+
+  @Test
+  public void testGetTurn2Moves() {
+    Board board = new Board();
+
+    Move move1 = new Move(PieceType.PAWN, "b2","b4");
+    Move move2 = new Move(PieceType.PAWN, "a7","a5");
+
+    board.move(move1);
+    board.move(move2);
+
+    assertEquals("Expected turn to be white after two moves", Color.WHITE, board.getTurn());
+  }
+
+  @Test
+  public void testGetTurnMultipleMoves() {
+    Board board = new Board();
+
+    Move move1 = new Move(PieceType.PAWN, "b2","b4");
+    Move move2 = new Move(PieceType.PAWN, "a7","a5");
+    Move move3 = new Move(PieceType.KNIGHT, "b1","c3");
+    Move move4 = new Move(PieceType.KNIGHT, "g8","h6");
+    Move move5 = new Move(PieceType.KNIGHT, "g1","f3");
+
+    board.move(move1);
+    board.move(move2);
+    board.move(move3);
+    board.move(move4);
+    board.move(move5);
+
+    assertEquals("Expected turn to be black after five moves", Color.BLACK, board.getTurn());
+  }
+
+  @Test
+  public void testGetMoveList0Moves() {
+    Board board = new Board();
+    List<Move> moveList = board.getMoveList();
+    assertEquals("Expected nothing on initial movelist", 0, moveList.size());
+  }
+
+  @Test
+  public void testGetMoveListConstructorEmpty() {
+    String boardStr = "-  k  -  -  -  -  -  -" + "\n" +
+                      "-  r  -  p  -  -  -  K" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  Q  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    Board board = new Board(boardStr, Color.BLACK, new ArrayList<Move>(), new ArrayList<Piece>());
+    assertEquals("Expected nothing since initial movelist was empty", 0, moveList.size());
+  }
+
+  @Test
+  public void testGetMoveListConstructorNonEmpty() {
+    Move previousMove1 = new Move(PieceType.KING, "a8", "b8");
+    Move previousMove2 = new Move(PieceType.QUEEN, "e1", "e5");
+    List<Move> previousMoveList = new ArrayList<Move>(Arrays.asList(previousMove1, previousMove2));
+    String boardStr = "-  k  -  -  -  -  -  -" + "\n" +
+                      "-  r  -  p  -  -  -  K" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  Q  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    Board board = new Board(boardStr, Color.BLACK, previousMoveList, new ArrayList<Piece>());
+    List<Move> moveList = board.getMoveList();
+    assertEquals("Expected input movelist", previousMoveList, moveList);
+  }
+
+  @Test
+  public void testGetMoveList1Move() {
+    Board board = new Board();
+
+    Move move1 = new Move(PieceType.PAWN, "e2", "e4");
+
+    board.move(move1);
+
+    List<Move> moveList = board.getMoveList();
+    List<Move> expectedList = new ArrayList<>(Arrays.asList(move1));
+    
+    assertEquals("Expected 4 input moves to be in movelist", expectedList, moveList);
+  }
+
+  @Test
+  public void testGetMoveListMultipleMoves() {
+    Board board = new Board();
+
+    Move move1 = new Move(PieceType.PAWN, "e2", "e4");
+    Move move2 = new Move(PieceType.PAWN, "e7", "e5");
+    Move move3 = new Move(PieceType.KNIGHT, "g1", "f3");
+    Move move4 = new Move(PieceType.KNIGHT, "b8", "c6");
+
+    board.move(move1);
+    board.move(move2);
+    board.move(move3);
+    board.move(move4);
+
+    List<Move> moveList = board.getMoveList();
+    List<Move> expectedList = new ArrayList<>(Arrays.asList(move1, move2, move3, move4));
+    
+    assertEquals("Expected 4 input moves to be in movelist", expectedList, moveList);
+  }
+
   ////////////////////////////////////////////////////
   //              PERFORMANCE TESTS                 //
   ////////////////////////////////////////////////////
