@@ -1462,6 +1462,8 @@ public class BoardTests {
                       "-  -  -  -  -  -  -  -";
 
     Board board = new Board(boardStr, Color.BLACK, new ArrayList<Move>(), new ArrayList<Piece>());
+    List<Move> moveList = board.getMoveList();
+
     assertEquals("Expected nothing since initial movelist was empty", 0, moveList.size());
   }
 
@@ -1516,6 +1518,33 @@ public class BoardTests {
     List<Move> expectedList = new ArrayList<>(Arrays.asList(move1, move2, move3, move4));
     
     assertEquals("Expected 4 input moves to be in movelist", expectedList, moveList);
+  }
+
+  @Test
+  public void testGetLastMoveAfterUndo() {
+    Board board = new Board();
+
+    Move move1 = new Move(PieceType.PAWN, "e2", "e4");
+    Move move2 = new Move(PieceType.PAWN, "e7", "e5");
+    Move move3 = new Move(PieceType.KNIGHT, "g1", "f3");
+    Move move4 = new Move(PieceType.KNIGHT, "b8", "c6");
+
+    board.move(move1);
+    board.move(move2);
+    board.move(move3);
+    board.move(move4);
+
+    board.undoLastMove();
+    board.undoLastMove();
+    
+    assertEquals("Expected move 2 to be last moved played after 2 undoes", move2, board.getLastMove());
+  }
+
+  @Test
+  public void testGetLastMoveInit() {
+    Board board = new Board();
+
+    assertEquals("Expected no 'last move' on init", null, board.getLastMove());
   }
 
   ////////////////////////////////////////////////////
