@@ -233,6 +233,24 @@ public class Board {
     if (isEnPassent(move)) {
 
     } else if (move.isCastleMove()) {
+      // move the king to target square
+      int endRow = move.getEndRow();
+      int endCol = move.getEndCol();
+      Piece king = clearSquare(move.getStartRow(), move.getStartCol());
+      addPiece(king, endRow, endCol);
+
+      // move appropriate rook to other side of king
+      int rookEndCol = (endCol == 2) ? 3 : 5;
+      int rookStartCol = (endCol == 2) ? 0 : 7;
+
+      // remove rook from starting square
+      //  - note that rook starts on same row as the king being
+      //    moved
+      Piece rook = clearSquare(endRow, rookStartCol);
+
+      // move rook to other side of king
+      addPiece(rook, endRow, rookEndCol);
+
     } else if (move.isPromotion()) {
       // create the piece to promote to
       Piece promotedPiece = Piece.newPiece(move.getPromotion(), getTurn());
@@ -246,10 +264,14 @@ public class Board {
         this.capturedPieces.add(clearedPiece);
       }
 
+      // clear the square containing the pawn
       Piece pawn = clearSquare(move.getStartRow(), move.getStartCol());
+      // record the pawn that promoted
       this.promotedPieces.add(pawn);
 
+      // place piece at target square
       addPiece(promotedPiece, endRow, endCol);
+
     } else {
       // clear the square piece is being moved to
       int endRow = move.getEndRow();

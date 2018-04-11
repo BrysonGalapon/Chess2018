@@ -620,6 +620,46 @@ public class BoardTests {
   }
 
   @Test
+  public void testLegalMovesCantCastleWhite() {
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  K  B  N  R";
+
+    Board board = new Board(boardStr, Color.WHITE);
+ 
+    Set<Move> legalMoves = board.legalMoves();
+
+    Move castle = new Move(PieceType.KING, "e1", "g1");
+
+    assertFalse("Castling kingside shouldn't be a move", !legalMoves.contains(castle));
+  }
+
+  @Test
+  public void testLegalMovesCantCastleBlack() {
+    String boardStr = "r  q  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  K  -  -  -";
+
+    Board board = new Board(boardStr, Color.BLACK);
+ 
+    Set<Move> legalMoves = board.legalMoves();
+
+    Move castle = new Move(PieceType.KING, "e8", "c8");
+
+    assertFalse("Castling queenside shouldn't be a move", !legalMoves.contains(castle));
+  }
+
+  @Test
   public void testUndoLastMovePawn() {
     Board board = new Board();
     String rep1 = board.compressBoard();
