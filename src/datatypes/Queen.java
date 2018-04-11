@@ -4,8 +4,8 @@ package src.datatypes;
  * Represents a Queen
  */
 public class Queen implements Piece {
-  // whether or not this piece has moved
-  private boolean hasMoved;
+  // number of times this piece has moved
+  private int numMoved;
   // color of this piece
   private final Color color;
   // type of piece this is
@@ -13,22 +13,32 @@ public class Queen implements Piece {
 
   /**
    * Create a new Queen of a given color
-   * @param color color of the queen
+   * @param color color of the Queen
    */
   public Queen(Color color) {
     this.color = color; 
-    this.hasMoved = false;
-    this.type = PieceType.QUEEN;
+    this.numMoved = 0;
+    this.type = PieceType.KING;
   }
 
   @Override
   public boolean hasMoved() {
-    return this.hasMoved;
+    return numMoved != 0;
   }
 
   @Override
-  public void setMoved() {
-    this.hasMoved = true;
+  public void indicateMoved() {
+    numMoved++;
+  }
+
+  @Override
+  public void indicateBackward() {
+    numMoved--;
+  }
+
+  @Override
+  public int numTimesMoved() {
+    return numMoved;
   }
 
   @Override
@@ -54,7 +64,9 @@ public class Queen implements Piece {
   public Piece copy() {
     Piece newPiece = new Queen(this.getColor());
     if (this.hasMoved()) {
-      newPiece.setMoved();
+      for (int i=0; i < this.numTimesMoved(); i++) {
+        newPiece.indicateMoved();
+      }
     }
     return newPiece;
   }
@@ -64,7 +76,7 @@ public class Queen implements Piece {
     if (!(other instanceof Queen)) {return false;}
     Queen otherQueen = (Queen) other;
     boolean sameColor = this.getColor().equals(otherQueen.getColor());
-    boolean sameMoved = this.hasMoved() == otherQueen.hasMoved();
+    boolean sameMoved = this.numTimesMoved() == otherQueen.numTimesMoved();
     boolean sameType = this.getType().equals(otherQueen.getType());
 
     return sameColor && sameMoved && sameType;

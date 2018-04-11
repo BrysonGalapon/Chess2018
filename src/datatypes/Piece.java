@@ -102,7 +102,18 @@ public interface Piece {
   /**
    * Indicate to this piece that it has moved
    */
-  public void setMoved();
+  public void indicateMoved();
+
+  /**
+   * Indicate to this piece that it has been moved back
+   */
+  public void indicateBackward();
+
+  /**
+   * Obtain the number of times this piece has moved
+   * @return the number of times this piece has moved
+   */
+  public int numTimesMoved();
 
   /**
    * Obtain the color of this piece

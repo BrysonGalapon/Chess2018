@@ -14,6 +14,8 @@ public class Board {
   private final List<Piece> capturedPieces;
   // side who is currently to move
   private Color turn;
+  // list of all the pieces (pawns) that have been promoted, in order
+  private final List<Piece> promotedPieces = new ArrayList<>();
   // board containing chess pieces
   private final Piece[][] board;
 
@@ -244,12 +246,8 @@ public class Board {
         this.capturedPieces.add(clearedPiece);
       }
 
-      // remove piece on starting square (just drop it)
-      // NOTE: Could choose to store piece in a 'promotedPieces' 
-      //        list so one does not need to create new Pawn
-      //        objects when undo-ing a promotion. Unclear 
-      //        if this will be a performance boost or not
-      clearSquare(move.getStartRow(), move.getStartCol());
+      Piece pawn = clearSquare(move.getStartRow(), move.getStartCol());
+      this.promotedPieces.add(pawn);
 
       addPiece(promotedPiece, endRow, endCol);
     } else {

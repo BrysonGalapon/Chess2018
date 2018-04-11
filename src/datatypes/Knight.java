@@ -4,8 +4,8 @@ package src.datatypes;
  * Represents a Knight
  */
 public class Knight implements Piece {
-  // whether or not this piece has moved
-  private boolean hasMoved;
+  // number of times this piece has moved
+  private int numMoved;
   // color of this piece
   private final Color color;
   // type of piece this is
@@ -13,22 +13,32 @@ public class Knight implements Piece {
 
   /**
    * Create a new Knight of a given color
-   * @param color color of the knight
+   * @param color color of the Knight
    */
   public Knight(Color color) {
     this.color = color; 
-    this.hasMoved = false;
-    this.type = PieceType.KNIGHT;
+    this.numMoved = 0;
+    this.type = PieceType.KING;
   }
 
   @Override
   public boolean hasMoved() {
-    return this.hasMoved;
+    return numMoved != 0;
   }
 
   @Override
-  public void setMoved() {
-    this.hasMoved = true;
+  public void indicateMoved() {
+    numMoved++;
+  }
+
+  @Override
+  public void indicateBackward() {
+    numMoved--;
+  }
+
+  @Override
+  public int numTimesMoved() {
+    return numMoved;
   }
 
   @Override
@@ -54,7 +64,9 @@ public class Knight implements Piece {
   public Piece copy() {
     Piece newPiece = new Knight(this.getColor());
     if (this.hasMoved()) {
-      newPiece.setMoved();
+      for (int i=0; i < this.numTimesMoved(); i++) {
+        newPiece.indicateMoved();
+      }
     }
     return newPiece;
   }
@@ -64,7 +76,7 @@ public class Knight implements Piece {
     if (!(other instanceof Knight)) {return false;}
     Knight otherKnight = (Knight) other;
     boolean sameColor = this.getColor().equals(otherKnight.getColor());
-    boolean sameMoved = this.hasMoved() == otherKnight.hasMoved();
+    boolean sameMoved = this.numTimesMoved() == otherKnight.numTimesMoved();
     boolean sameType = this.getType().equals(otherKnight.getType());
 
     return sameColor && sameMoved && sameType;

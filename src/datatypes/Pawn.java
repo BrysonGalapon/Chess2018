@@ -4,8 +4,8 @@ package src.datatypes;
  * Represents a Pawn
  */
 public class Pawn implements Piece {
-  // whether or not this piece has moved
-  private boolean hasMoved;
+  // number of times this piece has moved
+  private int numMoved;
   // color of this piece
   private final Color color;
   // type of piece this is
@@ -13,22 +13,32 @@ public class Pawn implements Piece {
 
   /**
    * Create a new Pawn of a given color
-   * @param color color of the pawn
+   * @param color color of the Pawn
    */
   public Pawn(Color color) {
     this.color = color; 
-    this.hasMoved = false;
-    this.type = PieceType.PAWN;
+    this.numMoved = 0;
+    this.type = PieceType.KING;
   }
 
   @Override
   public boolean hasMoved() {
-    return this.hasMoved;
+    return numMoved != 0;
   }
 
   @Override
-  public void setMoved() {
-    this.hasMoved = true;
+  public void indicateMoved() {
+    numMoved++;
+  }
+
+  @Override
+  public void indicateBackward() {
+    numMoved--;
+  }
+
+  @Override
+  public int numTimesMoved() {
+    return numMoved;
   }
 
   @Override
@@ -54,7 +64,9 @@ public class Pawn implements Piece {
   public Piece copy() {
     Piece newPiece = new Pawn(this.getColor());
     if (this.hasMoved()) {
-      newPiece.setMoved();
+      for (int i=0; i < this.numTimesMoved(); i++) {
+        newPiece.indicateMoved();
+      }
     }
     return newPiece;
   }
@@ -64,7 +76,7 @@ public class Pawn implements Piece {
     if (!(other instanceof Pawn)) {return false;}
     Pawn otherPawn = (Pawn) other;
     boolean sameColor = this.getColor().equals(otherPawn.getColor());
-    boolean sameMoved = this.hasMoved() == otherPawn.hasMoved();
+    boolean sameMoved = this.numTimesMoved() == otherPawn.numTimesMoved();
     boolean sameType = this.getType().equals(otherPawn.getType());
 
     return sameColor && sameMoved && sameType;

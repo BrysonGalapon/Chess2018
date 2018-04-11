@@ -4,8 +4,8 @@ package src.datatypes;
  * Represents a Bishop
  */
 public class Bishop implements Piece {
-  // whether or not this piece has moved
-  private boolean hasMoved;
+  // number of times this piece has moved
+  private int numMoved;
   // color of this piece
   private final Color color;
   // type of piece this is
@@ -13,22 +13,32 @@ public class Bishop implements Piece {
 
   /**
    * Create a new Bishop of a given color
-   * @param color color of the bishop
+   * @param color color of the Bishop
    */
   public Bishop(Color color) {
     this.color = color; 
-    this.hasMoved = false;
-    this.type = PieceType.BISHOP;
+    this.numMoved = 0;
+    this.type = PieceType.KING;
   }
 
   @Override
   public boolean hasMoved() {
-    return this.hasMoved;
+    return numMoved != 0;
   }
 
   @Override
-  public void setMoved() {
-    this.hasMoved = true;
+  public void indicateMoved() {
+    numMoved++;
+  }
+
+  @Override
+  public void indicateBackward() {
+    numMoved--;
+  }
+
+  @Override
+  public int numTimesMoved() {
+    return numMoved;
   }
 
   @Override
@@ -54,7 +64,9 @@ public class Bishop implements Piece {
   public Piece copy() {
     Piece newPiece = new Bishop(this.getColor());
     if (this.hasMoved()) {
-      newPiece.setMoved();
+      for (int i=0; i < this.numTimesMoved(); i++) {
+        newPiece.indicateMoved();
+      }
     }
     return newPiece;
   }
@@ -64,7 +76,7 @@ public class Bishop implements Piece {
     if (!(other instanceof Bishop)) {return false;}
     Bishop otherBishop = (Bishop) other;
     boolean sameColor = this.getColor().equals(otherBishop.getColor());
-    boolean sameMoved = this.hasMoved() == otherBishop.hasMoved();
+    boolean sameMoved = this.numTimesMoved() == otherBishop.numTimesMoved();
     boolean sameType = this.getType().equals(otherBishop.getType());
 
     return sameColor && sameMoved && sameType;

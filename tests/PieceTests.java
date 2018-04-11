@@ -11,7 +11,7 @@ public class PieceTests {
   @Test
   public void testHasMovedMoved() {
     Piece piece = Piece.rook(Color.WHITE);
-    piece.setMoved();
+    piece.indicateMoved();
     assertTrue("Piece should have been moved", piece.hasMoved());
   }
 
@@ -24,16 +24,16 @@ public class PieceTests {
   @Test
   public void testSetMoved() {
     Piece piece = Piece.king(Color.BLACK);
-    piece.setMoved();
+    piece.indicateMoved();
     assertTrue("Piece should have been moved", piece.hasMoved());
   }
 
   @Test
   public void testSetMovedTwice() {
     Piece piece = Piece.knight(Color.BLACK);
-    piece.setMoved();
+    piece.indicateMoved();
     assertTrue("Piece should have been moved", piece.hasMoved());
-    piece.setMoved();
+    piece.indicateMoved();
     assertTrue("Piece still should have been moved", piece.hasMoved());
   }
 
@@ -41,7 +41,7 @@ public class PieceTests {
   public void testGetColorMovePiece() {
     Piece piece = Piece.queen(Color.WHITE);
     assertEquals("Incorrect piece color", Color.WHITE, piece.getColor());
-    piece.setMoved();
+    piece.indicateMoved();
     assertEquals("Moving piece shouldn't change its color", Color.WHITE, piece.getColor());
   }
 
@@ -73,7 +73,7 @@ public class PieceTests {
   public void testGetType4() {
     Piece piece = Piece.knight(Color.WHITE);
     assertEquals("Incorrect piece type", PieceType.KNIGHT, piece.getType());
-    piece.setMoved();
+    piece.indicateMoved();
     assertEquals("Moving piece shouldn't change its type", PieceType.KNIGHT, piece.getType());
   }
 
@@ -88,7 +88,7 @@ public class PieceTests {
   @Test
   public void testCopySetMoved() {
     Piece piece = Piece.king(Color.WHITE);
-    piece.setMoved();
+    piece.indicateMoved();
     Piece pieceCopy = piece.copy();
 
     assertEquals("Copy should have same moved state as original", piece.hasMoved(), pieceCopy.hasMoved());
@@ -98,7 +98,7 @@ public class PieceTests {
   public void testCopySetMovedAfterCopy() {
     Piece piece = Piece.bishop(Color.BLACK);
     Piece pieceCopy = piece.copy();
-    piece.setMoved();
+    piece.indicateMoved();
 
     assertEquals("Copy should have different moved state as original", piece.hasMoved(), !pieceCopy.hasMoved());
   }
