@@ -723,6 +723,98 @@ public class BoardTests {
   }
 
   @Test
+  public void testUndoLastMoveMovedRookToAlmostSamePosition() {
+    String boardStr = "-  k  -  -  -  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "R  -  -  -  K  -  -  R";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+    String rep1 = board.compressBoard();
+
+    Move rookMove1 = new Move(PieceType.ROOK, "a1", "a4");
+    Move rookMove2 = new Move(PieceType.ROOK, "a4", "a1");
+
+    Move kingMove1 = new Move(PieceType.KING, "b8", "c8");
+    Move kingMove2 = new Move(PieceType.KING, "c8", "b8");
+
+    // make 8 moves going back and forth
+    board.move(rookMove1);
+    board.move(kingMove1);
+    board.move(rookMove2);
+    board.move(kingMove2);
+    board.move(rookMove1);
+    board.move(kingMove1);
+    board.move(rookMove2);
+    board.move(kingMove2);
+
+    // undo last 8 moves
+    board.undoLastMove();
+    board.undoLastMove();
+    board.undoLastMove();
+    board.undoLastMove();
+    board.undoLastMove();
+    board.undoLastMove();
+    board.undoLastMove();
+    board.undoLastMove();
+
+    String rep2 = board.compressBoard();
+ 
+    assertEquals("Expected same position after undoing all moves", rep1, rep2);
+  }
+
+  @Test
+  public void testUndoLastMoveMovedRookMultipleTimes() {
+    String boardStr = "-  k  -  -  -  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "R  -  -  -  K  -  -  R";
+
+    List<Move> moveList = new ArrayList<>();
+    List<Piece> capturedList = new ArrayList<>();
+
+    Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
+    String rep1 = board.compressBoard();
+
+    Move rookMove1 = new Move(PieceType.ROOK, "a1", "a4");
+    Move rookMove2 = new Move(PieceType.ROOK, "a4", "a1");
+
+    Move kingMove1 = new Move(PieceType.KING, "b8", "c8");
+    Move kingMove2 = new Move(PieceType.KING, "c8", "b8");
+
+    // make 8 moves going back and forth
+    board.move(rookMove1);
+    board.move(kingMove1);
+    board.move(rookMove2);
+    board.move(kingMove2);
+    board.move(rookMove1);
+    board.move(kingMove1);
+    board.move(rookMove2);
+
+    // only undo last 4 moves
+    board.undoLastMove();
+    board.undoLastMove();
+    board.undoLastMove();
+    board.undoLastMove();
+
+    String rep2 = board.compressBoard();
+ 
+    assertFalse("Expected different position after only undoing 4 moves", rep1.equals(rep2));
+  }
+
+
+  @Test
   public void testUndoLastMoveMovedKing() {
     String boardStr = "-  k  -  -  -  -  -  -" + "\n" +
                       "-  -  -  -  -  -  -  -" + "\n" + 
@@ -1247,6 +1339,26 @@ public class BoardTests {
   }
 
   @Test
+  public void testMoveInvalidMovePawnMovesTwoSteps() {
+    Board board = new Board();
+
+    Move pawnMove1 = new Move(PieceType.PAWN, "c2", "c3");
+    Move blackMove = new Move(PieceType.PAWN, "a7", "a6");
+    Move pawnMove2 = new Move(PieceType.PAWN, "c3", "c5");
+
+    board.move(pawnMove1);
+    board.move(blackMove);
+
+    String rep1 = board.compressBoard();
+
+    board.move(pawnMove2);
+
+    String rep2 = board.compressBoard();
+ 
+    assertEquals("Pawn can't move two steps after it moved already", rep1, rep2);
+  }
+
+  @Test
   public void testMoveInvalidMovePieceJumps() {
     String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
                       "-  -  -  -  -  -  -  -" + "\n" + 
@@ -1366,7 +1478,7 @@ public class BoardTests {
 
     Board board = new Board(boardStr, Color.WHITE, moveList, capturedList);
 
-    Move pieceMove = new Move(PieceType.KNIGHT, "d6", "g7");
+    Move pieceMove = new Move(PieceType.KNIGHT, "e6", "g7");
 
     board.move(pieceMove);
     assertEquals("Expected double check to be legal", expected, board.toString());
@@ -1462,6 +1574,20 @@ public class BoardTests {
     board.move(move2);
 
     assertEquals("Expected turn to be white after two moves", Color.WHITE, board.getTurn());
+  }
+
+  @Test
+  public void testGetTurn2MovesWithUndo() {
+    Board board = new Board();
+
+    Move move1 = new Move(PieceType.PAWN, "b2","b4");
+    Move move2 = new Move(PieceType.PAWN, "a7","a5");
+
+    board.move(move1);
+    board.move(move2);
+    board.undoLastMove();
+
+    assertEquals("Expected undo-ing last move to toggle turn", Color.BLACK, board.getTurn());
   }
 
   @Test

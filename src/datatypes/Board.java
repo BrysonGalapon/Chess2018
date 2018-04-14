@@ -178,10 +178,10 @@ public class Board {
    * @return the piece on that square, if it exists.
    *         if the piece doesn't exist, return null
    */
-  public Piece getPiece(int row, int col) {
+  private Piece getPiece(int row, int col) {
     Piece piece = board[row][col];
     if (piece == null) {return null;}
-    return piece.copy();
+    return piece;
   }
 
   /**
@@ -206,7 +206,90 @@ public class Board {
    *  if there are no more moves to undo
    */
   public void undoLastMove() {
-    // TODO
+    Move move = getLastMove();
+    // don't do anything if no last move
+    if (move == null) {return;}
+
+    // undo the move by type of move
+    if (isEnPassent(move)) {
+      // get last piece that was captured
+      Piece capturedPiece = popLastCapturedPiece();
+
+      int startRow = move.getStartRow();
+      int startCol = move.getStartCol();
+      int endCol = move.getEndCol();
+
+      // get pawn that did en passent
+      Piece pawn = clearSquare(move.getEndRow(), endCol);
+      addPiece(pawn, startRow, startCol);
+      pawn.indicateBackward();
+
+      // figure out which side captured piece should be placed
+      boolean capturedRight = (endCol-startCol) > 0;
+      if (capturedRight) {
+        addPiece(capturedPiece, startRow, startCol+1);
+      } else {
+        addPiece(capturedPiece, startRow, startCol-1);
+      }
+
+    } else if (move.isCastleMove()) {
+      // pick up the king
+      int endRow = move.getEndRow();
+      int endCol = move.getEndCol();
+      Piece king = clearSquare(endRow, endCol);
+
+      // pick up the rook
+      int rookEndCol = (endCol == 2) ? 3 : 5;
+      int rookStartCol = (endCol == 2) ? 0 : 7;
+      Piece rook = clearSquare(endRow, rookEndCol);
+
+      // place the king back
+      addPiece(king, move.getStartRow(), move.getStartCol());
+      king.indicateBackward();
+
+      // place the rook back
+      addPiece(rook, endRow, rookStartCol);
+      rook.indicateBackward();
+
+    } else if (move.isPromotion()) {
+      int endRow = move.getEndRow();
+      int endCol = move.getEndCol();
+
+      // delete the promoted piece
+      clearSquare(endRow, endCol);
+
+      // put pawn back on start square
+      Piece pawn = popLastPromotedPiece();
+      addPiece(pawn, move.getStartRow(), move.getStartCol());
+      pawn.indicateBackward();
+
+      // if capturing a piece, place captured piece back
+      if (move.isCapture()) {
+        Piece capturedPiece = popLastCapturedPiece();
+        addPiece(capturedPiece, endRow, endCol);
+      } 
+
+    } else {
+      int endRow = move.getEndRow();
+      int endCol = move.getEndCol();
+      // pick up moved piece
+      Piece movingPiece = clearSquare(endRow, endCol);
+
+      // if move was a capture, place captured piece back
+      if (move.isCapture()) {
+        Piece clearedPiece = popLastCapturedPiece();
+        addPiece(clearedPiece, endRow, endCol);
+      }
+
+      // place moved piece back
+      addPiece(movingPiece, move.getStartRow(), move.getStartCol());
+      movingPiece.indicateBackward();
+    }
+
+    // remove last move from the move history
+    this.moveList.remove(moveList.size()-1);
+    // change the turn back
+    this.toggleTurn();
   }
 
   /**
@@ -231,13 +314,36 @@ public class Board {
     // otherwise, the move is a regular type of move
 
     if (isEnPassent(move)) {
+      int endCol = move.getEndCol();
+      int startRow = move.getStartRow();
+      int startCol = move.getStartCol();
+
+      // get the pawn
+      Piece pawn = clearSquare(startRow, startCol);
+      // place it on target square
+      addPiece(pawn, move.getEndRow(), endCol); 
+      pawn.indicateMoved();
+
+      // figure out which side captured piece is on
+      boolean captureRight = (endCol-startCol) > 0;
+      Piece capturedPiece;
+      if (captureRight) {
+          capturedPiece = clearSquare(startRow, startCol+1);
+      } else {
+          capturedPiece = clearSquare(startRow, startCol-1);
+      }
+
+      // add that piece to the captured list
+      this.capturedPieces.add(capturedPiece);
 
     } else if (move.isCastleMove()) {
       // move the king to target square
       int endRow = move.getEndRow();
       int endCol = move.getEndCol();
       Piece king = clearSquare(move.getStartRow(), move.getStartCol());
+
       addPiece(king, endRow, endCol);
+      king.indicateMoved();
 
       // move appropriate rook to other side of king
       int rookEndCol = (endCol == 2) ? 3 : 5;
@@ -250,6 +356,7 @@ public class Board {
 
       // move rook to other side of king
       addPiece(rook, endRow, rookEndCol);
+      rook.indicateMoved();
 
     } else if (move.isPromotion()) {
       // create the piece to promote to
@@ -258,27 +365,30 @@ public class Board {
       // clear the square piece is being moved to
       int endRow = move.getEndRow();
       int endCol = move.getEndCol();
-      Piece clearedPiece = clearSquare(endRow, endCol);
       // if that square contained a piece, add it to captured list
       if (move.isCapture()) {
+        Piece clearedPiece = clearSquare(endRow, endCol);
         this.capturedPieces.add(clearedPiece);
       }
 
       // clear the square containing the pawn
       Piece pawn = clearSquare(move.getStartRow(), move.getStartCol());
+      pawn.indicateMoved();
+
       // record the pawn that promoted
       this.promotedPieces.add(pawn);
 
       // place piece at target square
       addPiece(promotedPiece, endRow, endCol);
 
+
     } else {
       // clear the square piece is being moved to
       int endRow = move.getEndRow();
       int endCol = move.getEndCol();
-      Piece clearedPiece = clearSquare(endRow, endCol);
       // if that square contained a piece, add it to captured list
       if (move.isCapture()) {
+        Piece clearedPiece = clearSquare(endRow, endCol);
         this.capturedPieces.add(clearedPiece);
       }
 
@@ -286,6 +396,7 @@ public class Board {
       Piece movingPiece = clearSquare(move.getStartRow(), move.getStartCol());
       // place the piece at target square
       addPiece(movingPiece, endRow, endCol);
+      movingPiece.indicateMoved();
     }
 
     // update the moveList to record the move just played
@@ -537,6 +648,120 @@ public class Board {
     } else {
       this.turn = Color.WHITE;
     }
+  }
+
+  /**
+   * Add to set of moves that a king can make on this board if
+   *  it is on a certain square
+   * @param row row at which king is located
+   * @param col column at which king is located
+   * @param legalMoves set of moves to add legal king moves to
+   */
+  private void legalMovesKing(int row, int col, Set<Move> legalMoves) {
+    int square_row;
+    int square_col;
+    // look at all squares adjacent to king
+    for (int xOffset=-1; xOffset<=1; xOffset++) {
+      for (int yOffset=-1; yOffset<=1; yOffset++) {
+        // don't look at same square as king
+        if (xOffset == 0 && yOffset == 0) {continue;}
+
+        square_row = row+yOffset;
+        square_col = col+xOffset;
+        // only look at squares within bounds of board
+        if (square_row < 0 || square_row > 7) {continue;}
+        if (square_col < 0 || square_col > 7) {continue;}
+
+        if (containsPiece(square_row, square_col)) {
+        } else {
+        }
+      }
+    }
+  }
+
+  /**
+   * Add to set of moves that a queen can make on this board if
+   *  it is on a certain square and is not pinned
+   * @param row row at which queen is located
+   * @param col column at which queen is located
+   * @param legalMoves set of moves to add legal queen moves to
+   */
+  private void legalMovesQueen(int row, int col, Set<Move> legalMoves) {
+    //TODO
+  }
+
+  /**
+   * Add to set of moves that a pawn can make on this board if
+   *  it is on a certain square and is not pinned
+   * @param row row at which pawn is located
+   * @param col column at which pawn is located
+   * @param legalMoves set of moves to add legal pawn moves to
+   */
+  private void legalMovesPawn(int row, int col, Set<Move> legalMoves) {
+    //TODO
+  }
+
+  /**
+   * Add to set of moves that a rook can make on this board if
+   *  it is on a certain square and is not pinned
+   * @param row row at which rook is located
+   * @param col column at which rook is located
+   * @param legalMoves set of moves to add legal rook moves to
+   */
+  private void legalMovesRook(int row, int col, Set<Move> legalMoves) {
+    //TODO
+  }
+
+  /**
+   * Add to set of moves that a knight can make on this board if
+   *  it is on a certain square and is not pinned
+   * @param row row at which knight is located
+   * @param col column at which knight is located
+   * @param legalMoves set of moves to add legal knight moves to
+   */
+  private void legalMovesKnight(int row, int col, Set<Move> legalMoves) {
+    //TODO
+  }
+
+  /**
+   * Add to set of moves that a bishop can make on this board if
+   *  it is on a certain square and is not pinned
+   * @param row row at which bishop is located
+   * @param col column at which bishop is located
+   * @param legalMoves set of moves to add legal bishop moves to
+   */
+  private void legalMovesBishop(int row, int col, Set<Move> legalMoves) {
+    //TODO
+  }
+
+  /**
+   * Get the piece that was last captured on this board, and
+   *  removes it from the captured list
+   * @return the piece that was last captured. return null
+   *          if no piece was captured at this point
+   */
+  private Piece popLastCapturedPiece() {
+    int numCaptured = capturedPieces.size();
+    if (numCaptured == 0) {return null;}
+
+    Piece piece = capturedPieces.get(numCaptured-1);
+    capturedPieces.remove(piece);
+    return piece;
+  }
+
+  /**
+   * Get the piece that was last promoted on this board, and
+   *  removes it from the promoted list
+   * @return the piece that was last promoted. return null
+   *          if no piece was promoted at this point
+   */
+  private Piece popLastPromotedPiece() {
+    int numPromoted = promotedPieces.size();
+    if (numPromoted == 0) {return null;}
+
+    Piece piece = promotedPieces.get(numPromoted-1);
+    promotedPieces.remove(piece);
+    return piece;
   }
 
 

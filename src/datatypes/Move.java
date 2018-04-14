@@ -219,10 +219,10 @@ public class Move {
     } else if (startSquare.equals("e1") && endSquare.equals("c1")) {
       // white castles queenside
       return true;
-    } else if (startSquare.equals("e8") && endSquare.equals("g1")) {
+    } else if (startSquare.equals("e8") && endSquare.equals("g8")) {
       // black castles kingside
       return true;
-    } else if (startSquare.equals("e8") && endSquare.equals("c1")) {
+    } else if (startSquare.equals("e8") && endSquare.equals("c8")) {
       // black castles queenside
       return true;
     } else {
