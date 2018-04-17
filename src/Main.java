@@ -5,6 +5,7 @@ import java.awt.AWTException;
 import java.awt.event.*;
 
 import src.datatypes.*;
+import src.engine.*;
 import src.mouse_control.*;
 
 public class Main {
@@ -16,25 +17,32 @@ public class Main {
       Board board = new Board();
       System.out.println("Let's play a chess game!");
       String value = "";
+
+      Engine1 player1 = new Engine1(board);
+      Engine1 player2 = new Engine1(board);
       
+      Set<Move> legalMoves;
       while(!value.equals("end")) {
         System.out.println(board);
         System.out.println();
         value = reader.nextLine();
-
-        Set<Move> legalMoves = board.legalMoves();
+        legalMoves = board.legalMoves();
         if (legalMoves.size() == 0) {
           throw new Error("NANI, CHECKMATE??");
         }
-        // pick random move
-        int i = gen.nextInt(legalMoves.size());
-        int counter=0;
-        for (Move move : legalMoves) {
-          if (counter==i) {
-            board.move(move);
-          }
-          counter++;
+
+        player1.signalTurn();
+
+        System.out.println(board);
+        System.out.println();
+        value = reader.nextLine();
+        legalMoves = board.legalMoves();
+        if (legalMoves.size() == 0) {
+          throw new Error("NANI, CHECKMATE??");
         }
+
+        player2.signalTurn();
+
       }
     } catch (Exception e) {
       System.err.println("Tomato :(");

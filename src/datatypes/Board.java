@@ -2019,6 +2019,7 @@ public class Board {
       }
     }
 
+    System.err.println(this);
     throw new Error("Couldn't find a king - THERE SHOULD ALWAYS BE A KING");
   }
 
