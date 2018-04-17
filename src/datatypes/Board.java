@@ -969,8 +969,6 @@ public class Board {
     legalMoves.add(castleMove);
   }
 
-
-
   /**
    * Add to set of moves that a queen can make on this board if
    *  it is on a certain square and is not pinned
@@ -983,12 +981,17 @@ public class Board {
     Set<Tuple<Integer, Integer>> threatSquares = threatenedSquaresQueen(row, col, getTurn());
     int square_row;
     int square_col;
+    Color side = getTurn();
     Move move;
     for (Tuple<Integer, Integer> square : threatSquares) {
       square_row = square.x();
       square_col = square.y();
       // if threatened square contains a piece, then it must be a capture - otherwise it isn't a capture
       if (containsPiece(square_row, square_col)) {
+        Piece capturePiece = getPiece(square_row, square_col);
+        // don't capture own piece
+        if (capturePiece.getColor().equals(side)) {continue;}
+
         move = new Move(PieceType.QUEEN, row, col, square_row, square_col, true);
       } else {
         move = new Move(PieceType.QUEEN, row, col, square_row, square_col);
@@ -1029,11 +1032,16 @@ public class Board {
     int square_row;
     int square_col;
     Move move;
+    Color side = getTurn();
     for (Tuple<Integer, Integer> square : threatSquares) {
       square_row = square.x();
       square_col = square.y();
       // if threatened square contains a piece, then it must be a capture - otherwise it isn't a capture
       if (containsPiece(square_row, square_col)) {
+        Piece capturePiece = getPiece(square_row, square_col);
+        // don't capture own piece
+        if (capturePiece.getColor().equals(side)) {continue;}
+
         move = new Move(PieceType.ROOK, row, col, square_row, square_col, true);
       } else {
         move = new Move(PieceType.ROOK, row, col, square_row, square_col);
@@ -1074,11 +1082,16 @@ public class Board {
     int square_row;
     int square_col;
     Move move;
+    Color side = getTurn();
     for (Tuple<Integer, Integer> square : threatSquares) {
       square_row = square.x();
       square_col = square.y();
       // if threatened square contains a piece, then it must be a capture - otherwise it isn't a capture
       if (containsPiece(square_row, square_col)) {
+        Piece capturePiece = getPiece(square_row, square_col);
+        // don't capture own piece
+        if (capturePiece.getColor().equals(side)) {continue;}
+
         move = new Move(PieceType.KNIGHT, row, col, square_row, square_col, true);
       } else {
         move = new Move(PieceType.KNIGHT, row, col, square_row, square_col);
@@ -1119,11 +1132,16 @@ public class Board {
     int square_row;
     int square_col;
     Move move;
+    Color side = getTurn();
     for (Tuple<Integer, Integer> square : threatSquares) {
       square_row = square.x();
       square_col = square.y();
       // if threatened square contains a piece, then it must be a capture - otherwise it isn't a capture
       if (containsPiece(square_row, square_col)) {
+        Piece capturePiece = getPiece(square_row, square_col);
+        // don't capture own piece
+        if (capturePiece.getColor().equals(side)) {continue;}
+
         move = new Move(PieceType.BISHOP, row, col, square_row, square_col, true);
       } else {
         move = new Move(PieceType.BISHOP, row, col, square_row, square_col);
@@ -1614,15 +1632,7 @@ public class Board {
         if (square_row < 0 || square_row > 7) {continue;}
         if (square_col < 0 || square_col > 7) {continue;}
 
-        if (containsPiece(square_row, square_col)) {
-          Piece piece = getPiece(square_row, square_col);
-          // only add square if piece of opposite color
-          if (piece.getColor().equals(color)) {
-            squares.add(new Tuple<>(square_row,square_col));
-          }
-        } else {
-          squares.add(new Tuple<>(square_row,square_col));
-        }
+        squares.add(new Tuple<>(square_row,square_col));
       }
     }
 
@@ -1671,18 +1681,12 @@ public class Board {
 
     // check if left capture square is threatened
     if (inBounds(leftSquareRow, leftSquareCol)) {
-      if (!containsPiece(leftSquareRow, leftSquareCol) || !getPiece(leftSquareRow, leftSquareCol).getColor().equals(color)) {
-        // no piece or piece but opposite color
-        squares.add(new Tuple<>(leftSquareRow, leftSquareCol));
-      }
+      squares.add(new Tuple<>(leftSquareRow, leftSquareCol));
     }
 
     // check if right capture square is threatened
     if (inBounds(rightSquareRow, rightSquareCol)) {
-      if (!containsPiece(rightSquareRow, rightSquareCol) || !getPiece(rightSquareRow, rightSquareCol).getColor().equals(color)) {
-        // no piece or piece but opposite color
-        squares.add(new Tuple<>(rightSquareRow, rightSquareCol));
-      }
+      squares.add(new Tuple<>(rightSquareRow, rightSquareCol));
     }
 
     return squares;
@@ -1710,11 +1714,7 @@ public class Board {
         continue;
       }
 
-      Piece piece = getPiece(squareRow, squareCol);
-      // if run into a piece of same color, end
-      if (piece.getColor().equals(color)) {break;}
-
-      // ran into piece of opposite color, so add and then end
+      // ran into a piece, end
       squares.add(new Tuple<>(squareRow, squareCol));
       break;
     }
@@ -1730,11 +1730,7 @@ public class Board {
         continue;
       }
 
-      Piece piece = getPiece(squareRow, squareCol);
-      // if run into a piece of same color, end
-      if (piece.getColor().equals(color)) {break;}
-
-      // ran into piece of opposite color, so add and then end
+      // ran into a piece, end
       squares.add(new Tuple<>(squareRow, squareCol));
       break;
     }
@@ -1749,12 +1745,7 @@ public class Board {
         squares.add(new Tuple<>(squareRow, squareCol));
         continue;
       }
-
-      Piece piece = getPiece(squareRow, squareCol);
-      // if run into a piece of same color, end
-      if (piece.getColor().equals(color)) {break;}
-
-      // ran into piece of opposite color, so add and then end
+      // ran into a piece, end
       squares.add(new Tuple<>(squareRow, squareCol));
       break;
     }
@@ -1769,12 +1760,7 @@ public class Board {
         squares.add(new Tuple<>(squareRow, squareCol));
         continue;
       }
-
-      Piece piece = getPiece(squareRow, squareCol);
-      // if run into a piece of same color, end
-      if (piece.getColor().equals(color)) {break;}
-
-      // ran into piece of opposite color, so add and then end
+      // ran into a piece, end
       squares.add(new Tuple<>(squareRow, squareCol));
       break;
     }
@@ -1803,12 +1789,7 @@ public class Board {
         squares.add(new Tuple<>(squareRow, squareCol));
         continue;
       }
-
-      Piece piece = getPiece(squareRow, squareCol);
-      // if run into a piece of same color, end
-      if (piece.getColor().equals(color)) {break;}
-
-      // ran into piece of opposite color, so add and then end
+      // ran into a piece, end
       squares.add(new Tuple<>(squareRow, squareCol));
       break;
     }
@@ -1823,12 +1804,7 @@ public class Board {
         squares.add(new Tuple<>(squareRow, squareCol));
         continue;
       }
-
-      Piece piece = getPiece(squareRow, squareCol);
-      // if run into a piece of same color, end
-      if (piece.getColor().equals(color)) {break;}
-
-      // ran into piece of opposite color, so add and then end
+      // ran into a piece, end
       squares.add(new Tuple<>(squareRow, squareCol));
       break;
     }
@@ -1843,12 +1819,7 @@ public class Board {
         squares.add(new Tuple<>(squareRow, squareCol));
         continue;
       }
-
-      Piece piece = getPiece(squareRow, squareCol);
-      // if run into a piece of same color, end
-      if (piece.getColor().equals(color)) {break;}
-
-      // ran into piece of opposite color, so add and then end
+      // ran into a piece, end
       squares.add(new Tuple<>(squareRow, squareCol));
       break;
     }
@@ -1863,12 +1834,7 @@ public class Board {
         squares.add(new Tuple<>(squareRow, squareCol));
         continue;
       }
-
-      Piece piece = getPiece(squareRow, squareCol);
-      // if run into a piece of same color, end
-      if (piece.getColor().equals(color)) {break;}
-
-      // ran into piece of opposite color, so add and then end
+      // ran into a piece, end
       squares.add(new Tuple<>(squareRow, squareCol));
       break;
     }
@@ -1897,10 +1863,7 @@ public class Board {
     squareRow = row+yOffset;
     squareCol = col+xOffset;
     if (inBounds(squareRow, squareCol)) { // check if in bounds
-      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
-        // check if no piece or not same color piece
-        squares.add(new Tuple<>(squareRow, squareCol));
-      }
+      squares.add(new Tuple<>(squareRow, squareCol));
     }
 
     xOffset = -1;
@@ -1908,10 +1871,7 @@ public class Board {
     squareRow = row+yOffset;
     squareCol = col+xOffset;
     if (inBounds(squareRow, squareCol)) { // check if in bounds
-      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
-        // check if no piece or not same color piece
-        squares.add(new Tuple<>(squareRow, squareCol));
-      }
+      squares.add(new Tuple<>(squareRow, squareCol));
     }
 
     xOffset = 1;
@@ -1919,10 +1879,7 @@ public class Board {
     squareRow = row+yOffset;
     squareCol = col+xOffset;
     if (inBounds(squareRow, squareCol)) { // check if in bounds
-      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
-        // check if no piece or not same color piece
-        squares.add(new Tuple<>(squareRow, squareCol));
-      }
+      squares.add(new Tuple<>(squareRow, squareCol));
     }
 
     xOffset = -1;
@@ -1930,10 +1887,7 @@ public class Board {
     squareRow = row+yOffset;
     squareCol = col+xOffset;
     if (inBounds(squareRow, squareCol)) { // check if in bounds
-      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
-        // check if no piece or not same color piece
-        squares.add(new Tuple<>(squareRow, squareCol));
-      }
+      squares.add(new Tuple<>(squareRow, squareCol));
     }
 
     xOffset = 2;
@@ -1941,10 +1895,7 @@ public class Board {
     squareRow = row+yOffset;
     squareCol = col+xOffset;
     if (inBounds(squareRow, squareCol)) { // check if in bounds
-      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
-        // check if no piece or not same color piece
-        squares.add(new Tuple<>(squareRow, squareCol));
-      }
+      squares.add(new Tuple<>(squareRow, squareCol));
     }
 
     xOffset = -2;
@@ -1952,10 +1903,7 @@ public class Board {
     squareRow = row+yOffset;
     squareCol = col+xOffset;
     if (inBounds(squareRow, squareCol)) { // check if in bounds
-      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
-        // check if no piece or not same color piece
-        squares.add(new Tuple<>(squareRow, squareCol));
-      }
+      squares.add(new Tuple<>(squareRow, squareCol));
     }
 
     xOffset = 2;
@@ -1963,10 +1911,7 @@ public class Board {
     squareRow = row+yOffset;
     squareCol = col+xOffset;
     if (inBounds(squareRow, squareCol)) { // check if in bounds
-      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
-        // check if no piece or not same color piece
-        squares.add(new Tuple<>(squareRow, squareCol));
-      }
+      squares.add(new Tuple<>(squareRow, squareCol));
     }
 
     xOffset = -2;
@@ -1974,10 +1919,7 @@ public class Board {
     squareRow = row+yOffset;
     squareCol = col+xOffset;
     if (inBounds(squareRow, squareCol)) { // check if in bounds
-      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
-        // check if no piece or not same color piece
-        squares.add(new Tuple<>(squareRow, squareCol));
-      }
+      squares.add(new Tuple<>(squareRow, squareCol));
     }
 
     return squares;
