@@ -230,7 +230,7 @@ public class Board {
    * @return the piece on that square, if it exists.
    *         if the piece doesn't exist, return null
    */
-  private Piece getPiece(int row, int col) {
+  public Piece getPiece(int row, int col) {
     Piece piece = board[row][col];
     if (piece == null) {return null;}
     return piece;
@@ -259,6 +259,7 @@ public class Board {
    */
   public void undoLastMove() {
     Move move = getLastMove();
+ 
     // don't do anything if no last move
     if (move == null) {return;}
 
@@ -285,6 +286,7 @@ public class Board {
       }
 
     } else if (move.isCastleMove()) {
+
       // pick up the king
       int endRow = move.getEndRow();
       int endCol = move.getEndCol();
@@ -304,6 +306,7 @@ public class Board {
       rook.indicateBackward();
 
     } else if (move.isPromotion()) {
+
       int endRow = move.getEndRow();
       int endCol = move.getEndCol();
 
@@ -322,9 +325,12 @@ public class Board {
       } 
 
     } else {
+
       int endRow = move.getEndRow();
       int endCol = move.getEndCol();
       // pick up moved piece
+      if (!containsPiece(endRow, endCol)) {
+      }
       Piece movingPiece = clearSquare(endRow, endCol);
 
       // if move was a capture, place captured piece back
@@ -1216,10 +1222,12 @@ public class Board {
       }
     }
 
-    // if pawn hasn't moved yet and no piece blocking, then
-    //  pawn can move two squares forward
+    // if pawn hasn't moved yet and no piece blocking BOTH
+    //  squares, then pawn can move two squares forward
     if (row == initRow && !hasPieceInFront) {
-      possibleMoves.add(new Move(PieceType.PAWN, row, col, row+2*yOffset, col));
+      if (!containsPiece(row+2*yOffset,col)) {
+        possibleMoves.add(new Move(PieceType.PAWN, row, col, row+2*yOffset, col));
+      }
     }
 
     // check to see if pawn captures are valid, including en passent
@@ -1987,6 +1995,5 @@ public class Board {
   private boolean inBounds(int row, int col) {
     return (row >= 0 && row <= 7 && col >= 0 && col <= 7);
   }
-
 }
 

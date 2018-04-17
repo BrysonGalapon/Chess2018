@@ -156,6 +156,25 @@ public class BoardTests {
   }
 
   @Test
+  public void testLegalMovesPawn2Sqs() {
+    String boardStr = "-  -  -  -  -  k  -  -" + "\n" +
+                      "-  -  -  -  -  p  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  B  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  K  -  -";
+
+    Board board = new Board(boardStr, Color.BLACK);
+    Set<Move> legalMoves = board.legalMoves();
+    Move move1 = new Move(PieceType.PAWN, "f7", "f5", true);
+    Move move2 = new Move(PieceType.PAWN, "f7", "f5", false);
+    assertFalse("Pawn can't play 2 moves ahead if sq is occupied (capture)", legalMoves.contains(move1));
+    assertFalse("Pawn can't play 2 moves ahead if sq is occupied", legalMoves.contains(move2));
+  }
+
+  @Test
   public void testLegalMovesProtectedPiece() {
     String boardStr = "-  -  -  -  -  k  -  -" + "\n" +
                       "-  -  -  -  -  B  -  -" + "\n" + 
