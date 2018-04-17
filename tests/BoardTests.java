@@ -156,6 +156,86 @@ public class BoardTests {
   }
 
   @Test
+  public void testLegalMovesCheckmate1() {
+    String boardStr = "-  -  -  -  -  k  -  -" + "\n" +
+                      "-  -  -  -  -  Q  -  -" + "\n" + 
+                      "-  -  -  -  -  K  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    Board board = new Board(boardStr, Color.BLACK);
+    Set<Move> legalMoves = board.legalMoves();
+    assertEquals("Expected 0 legal moves in checkmate", 0, legalMoves.size());
+  }
+
+  @Test
+  public void testLegalMovesCheckmate2() {
+    String boardStr = "-  k  -  -  -  -  -  r" + "\n" +
+                      "-  b  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  q  K  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    Board board = new Board(boardStr, Color.WHITE);
+    Set<Move> legalMoves = board.legalMoves();
+    assertEquals("Expected 0 legal moves in checkmate", 0, legalMoves.size());
+  }
+
+  @Test
+  public void testLegalMovesCheckmate3() {
+    String boardStr = "-  k  -  -  -  -  r  r" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  K" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    Board board = new Board(boardStr, Color.WHITE);
+    Set<Move> legalMoves = board.legalMoves();
+    assertEquals("Expected 0 legal moves in checkmate", 0, legalMoves.size());
+  }
+
+  @Test
+  public void testLegalMovesCheckmate4() {
+    String boardStr = "Q  -  k  -  -  -  -  -" + "\n" +
+                      "-  -  p  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  R  -  -  -  K";
+
+    Board board = new Board(boardStr, Color.BLACK);
+    Set<Move> legalMoves = board.legalMoves();
+    assertEquals("Expected 0 legal moves in checkmate", 0, legalMoves.size());
+  }
+
+  @Test
+  public void testLegalMoves1MoveOutOfCheckmate() {
+    String boardStr = "Q  -  k  -  -  -  -  -" + "\n" +
+                      "-  -  P  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  R  -  -  -  K";
+
+    Board board = new Board(boardStr, Color.BLACK);
+    Set<Move> legalMoves = board.legalMoves();
+    assertEquals("Expected 1 legal moves to avoid checkmate", 1, legalMoves.size());
+  }
+
+  @Test
   public void testLegalMovesInitialPosition() {
     Board board = new Board();
 

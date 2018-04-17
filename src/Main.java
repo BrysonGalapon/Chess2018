@@ -1,5 +1,6 @@
 package src;
 
+import java.util.*;
 import java.awt.AWTException;
 import java.awt.event.*;
 
@@ -8,6 +9,41 @@ import src.mouse_control.*;
 
 public class Main {
   public static void main(String[] args) {
+
+    Scanner reader = new Scanner(System.in);
+    try {
+      Random gen = new Random();
+      Board board = new Board();
+      System.out.println("Let's play a chess game!");
+      String value = "";
+      
+      while(!value.equals("end")) {
+        System.out.println(board);
+        System.out.println();
+        value = reader.nextLine();
+
+        Set<Move> legalMoves = board.legalMoves();
+        if (legalMoves.size() == 0) {
+          throw new Error("NANI, CHECKMATE??");
+        }
+        // pick random move
+        int i = gen.nextInt(legalMoves.size());
+        int counter=0;
+        for (Move move : legalMoves) {
+          if (counter==i) {
+            board.move(move);
+          }
+          counter++;
+        }
+      }
+    } catch (Exception e) {
+      System.err.println("Tomato :(");
+    } finally {
+      reader.close();
+    }
+
+    int x = 1/0;
+
     try {
       Mouse_Control mouse = new Mouse_Control();
       Thread.sleep(2000);

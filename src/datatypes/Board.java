@@ -363,6 +363,17 @@ public class Board {
     moveNoCheck(move);
   }
 
+  ///**
+  // * Make a move on this board - does nothing if move is illegal
+  // *  - if move is legal, toggles player turn
+  // * @param startSq start square for move
+  // * @param endSq end square for move
+  // */
+  //public void move(String startSq, String endSq) {
+  //  // TODO
+  //  Move move = new Move(startSq, endSq);
+  //}
+
   /**
    * Make a move on this board, without checking if move is illegal
    *  - if move is legal, toggles player turn
