@@ -101,7 +101,7 @@ public class BoardTests {
 
     String rep1 = board1.compressBoard();
     String rep2 = board2.compressBoard();
-    assertFalse("Different positions not compressing to different value", !rep1.equals(rep2));
+    assertFalse("Different positions not compressing to different value", rep1.equals(rep2));
   }
 
   @Test
@@ -156,6 +156,21 @@ public class BoardTests {
   }
 
   @Test
+  public void testLegalMovesInitialPosition() {
+    Board board = new Board();
+
+    Set<Move> legalMoves = board.legalMoves();
+
+    assertEquals("Expected 20 initial moves for white", 20, legalMoves.size());
+
+    // toggle the turn
+    board.toggleTurn();
+    legalMoves = board.legalMoves();
+
+    assertEquals("Expected 20 initial moves for black", 20, legalMoves.size());
+  }
+
+  @Test
   public void testLegalMoves0Moves() {
     String boardStr = "-  -  -  -  -  k  -  -" + "\n" +
                       "-  -  -  -  -  Q  -  -" + "\n" + 
@@ -185,7 +200,7 @@ public class BoardTests {
     Board board = new Board(boardStr, Color.BLACK);
     Set<Move> legalMoves = board.legalMoves();
 
-    assertEquals("1 legal move in position setup", 0, legalMoves.size());
+    assertEquals("1 legal move in position setup", 1, legalMoves.size());
 
     Move onlyLegalMove = new Move(PieceType.KING, "h4", "h3");
     assertTrue("Kh3 is only legal move", legalMoves.contains(onlyLegalMove));
@@ -205,15 +220,10 @@ public class BoardTests {
     Board board = new Board(boardStr, Color.WHITE);
     Set<Move> legalMoves = board.legalMoves();
 
-    Move move1 = new Move(PieceType.KING, "e4", "e5");
-    Move move2 = new Move(PieceType.KING, "e4", "f5");
-    Move move3 = new Move(PieceType.KING, "e4", "f4");
-    Move move4 = new Move(PieceType.KING, "e4", "f3");
-    Move move5 = new Move(PieceType.KING, "e4", "e3");
-    Move move6 = new Move(PieceType.KING, "e4", "d3");
-    Move move7 = new Move(PieceType.KING, "e4", "d4");
-    Move move8 = new Move(PieceType.KING, "e4", "d5", true);
-    Set<Move> expectedLegalMoves = new HashSet<>(Arrays.asList(move1, move2, move3, move4, move5, move6, move7, move8));
+    Move move1 = new Move(PieceType.KING, "e4", "e3");
+    Move move2 = new Move(PieceType.KING, "e4", "f4");
+    Move move3 = new Move(PieceType.KING, "e4", "d5", true);
+    Set<Move> expectedLegalMoves = new HashSet<>(Arrays.asList(move1, move2, move3));
 
     assertEquals("Only king moves with a capture on d5 are the set of legal moves", expectedLegalMoves, legalMoves);
   }
@@ -271,7 +281,7 @@ public class BoardTests {
     Set<Move> legalMoves = board.legalMoves();
     assertEquals("Only 1 move", 1, legalMoves.size());
 
-    Move move = new Move(PieceType.QUEEN, "f4", "h6");
+    Move move = new Move(PieceType.QUEEN, "f4", "h6", true);
     assertTrue("Only Qxh6 is possible", legalMoves.contains(move));
   }
 
@@ -343,7 +353,7 @@ public class BoardTests {
     Board board = new Board(boardStr, Color.WHITE);
     Set<Move> legalMoves = board.legalMoves();
 
-    assertEquals("Only 6 legal moves (5 king moves + castling) are allowed in position setup", 6, legalMoves.size());
+    assertEquals("Only 15 legal moves (5 king moves + castling + 9 rook moves) are allowed in position setup", 15, legalMoves.size());
 
     Move castleMove = new Move(PieceType.KING, "e1", "g1");
     assertTrue("castling Kingside should be valid move", legalMoves.contains(castleMove));
@@ -363,10 +373,10 @@ public class BoardTests {
     Board board = new Board(boardStr, Color.BLACK);
     Set<Move> legalMoves = board.legalMoves();
 
-    assertEquals("Only 7 legal moves (5 king moves + castling) are allowed in position setup", 7, legalMoves.size());
+    assertEquals("Only 26 legal moves (5 king moves + 2 castling + 19 rook moves) are allowed in position setup", 26, legalMoves.size());
 
     Move castleKingside = new Move(PieceType.KING, "e8", "g8");
-    Move castleQueenside = new Move(PieceType.KING, "e1", "c8");
+    Move castleQueenside = new Move(PieceType.KING, "e8", "c8");
     assertTrue("castling Kingside should be valid move", legalMoves.contains(castleKingside));
     assertTrue("castling Queenside should be valid move", legalMoves.contains(castleQueenside));
   }
@@ -395,7 +405,7 @@ public class BoardTests {
     Move kingMove2 = new Move(PieceType.KING, "a1", "b2");
     Move kingMove3 = new Move(PieceType.KING, "a1", "b1");
     Move pawnForward = new Move(PieceType.PAWN, "c5", "c6");
-    Move enPassent = new Move(PieceType.PAWN, "c5", "d6");
+    Move enPassent = new Move(PieceType.PAWN, "c5", "d6", true);
 
     Set<Move> expectedMoves = new HashSet<Move>(Arrays.asList(kingMove1, kingMove2, kingMove3, pawnForward, enPassent));
     assertEquals("Expected 3 king moves + 2 pawn moves including en passent", expectedMoves, legalMoves);
@@ -419,14 +429,14 @@ public class BoardTests {
     Board board = new Board(boardStr, Color.BLACK, moveList, capturedList);
  
     Set<Move> legalMoves = board.legalMoves();
-
+    
     assertEquals("Only 5 legal moves (3 king moves + pawn forward + en passent) are allowed in position setup", 5, legalMoves.size());
 
     Move kingMove1 = new Move(PieceType.KING, "a8", "a7");
     Move kingMove2 = new Move(PieceType.KING, "a8", "b8");
     Move kingMove3 = new Move(PieceType.KING, "a8", "b7");
     Move pawnForward = new Move(PieceType.PAWN, "h4", "h3");
-    Move enPassent = new Move(PieceType.PAWN, "h4", "g3");
+    Move enPassent = new Move(PieceType.PAWN, "h4", "g3", true);
 
     Set<Move> expectedMoves = new HashSet<Move>(Arrays.asList(kingMove1, kingMove2, kingMove3, pawnForward, enPassent));
     assertEquals("Expected 3 king moves + 2 pawn moves including en passent", expectedMoves, legalMoves);
@@ -453,7 +463,7 @@ public class BoardTests {
 
     assertEquals("Only 9 legal moves (3 king moves + 1 pawn forward + 1 en passent + 4 pawn promotions) are allowed in position setup", 9, legalMoves.size());
 
-    Move enPassent = new Move(PieceType.PAWN, "h5", "g6");
+    Move enPassent = new Move(PieceType.PAWN, "h5", "g6", true);
     Move promote = new Move(PieceType.PAWN, "f7", "f8", false, PieceType.BISHOP);
     assertTrue("hxg6 enPassent expected to be move", legalMoves.contains(enPassent));
     assertTrue("promotion expected to be move", legalMoves.contains(promote));
@@ -474,7 +484,7 @@ public class BoardTests {
  
     Set<Move> legalMoves = board.legalMoves();
 
-    assertEquals("Only 13 legal moves (5 king moves + 4 pawn capture+ 4 knight moves) are allowed in position setup", 13, legalMoves.size());
+    assertEquals("Only 12 legal moves (3 king moves + 4 pawn capture+ 4 knight moves + 1 Rook move) are allowed in position setup", 12, legalMoves.size());
 
     Move promote = new Move(PieceType.PAWN, "g7", "h8", true, PieceType.KNIGHT);
     assertTrue("Expected gxh8 promotion to be a move", legalMoves.contains(promote));
@@ -516,7 +526,7 @@ public class BoardTests {
  
     Set<Move> legalMoves = board.legalMoves();
 
-    assertEquals("Only 13 legal moves (4 king moves + 9 rook moves) are allowed in position setup", 13, legalMoves.size());
+    assertEquals("Only 4 legal moves (4 king moves) are allowed in position setup", 4, legalMoves.size());
 
     Move castle = new Move(PieceType.KING, "e8", "g8");
 
@@ -547,9 +557,9 @@ public class BoardTests {
 
   @Test
   public void testLegalMovesEnPassentNotValid1() {
-    Move lastMove = new Move(PieceType.KING, "d2", "e1");
+    Move lastMove = new Move(PieceType.KING, "d7", "e8");
     
-    List<Move> moveList = new ArrayList<Move>(Arrays.asList());
+    List<Move> moveList = new ArrayList<Move>(Arrays.asList(lastMove));
     List<Piece> capturedPieces = new ArrayList<Piece>();
     String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
                       "-  -  -  -  -  -  -  -" + "\n" + 
@@ -564,9 +574,9 @@ public class BoardTests {
  
     Set<Move> legalMoves = board.legalMoves();
 
-    assertEquals("Only 13 legal moves (3 king moves + 10 rook moves) are allowed in position setup", 13, legalMoves.size());
+    assertEquals("Only 13 legal moves (5 king moves + 1 pawn move) are allowed in position setup", 6, legalMoves.size());
 
-    Move enPassent = new Move(PieceType.PAWN, "a5", "a6");
+    Move enPassent = new Move(PieceType.PAWN, "a5", "a6", true);
 
     assertFalse("En passent should be illegal", legalMoves.contains(enPassent));
   }
@@ -575,7 +585,7 @@ public class BoardTests {
   public void testLegalMovesEnPassentNotValid2() {
     Move lastMove = new Move(PieceType.PAWN, "b6", "b5");
     
-    List<Move> moveList = new ArrayList<Move>(Arrays.asList());
+    List<Move> moveList = new ArrayList<Move>(Arrays.asList(lastMove));
     List<Piece> capturedPieces = new ArrayList<Piece>();
     String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
                       "-  -  -  -  -  -  -  -" + "\n" + 
@@ -590,11 +600,71 @@ public class BoardTests {
  
     Set<Move> legalMoves = board.legalMoves();
 
-    assertEquals("Only 13 legal moves (3 king moves + 10 rook moves) are allowed in position setup", 13, legalMoves.size());
+    assertEquals("Only 6 legal moves (5 king moves + 1 pawn moves) are allowed in position setup", 6, legalMoves.size());
 
-    Move enPassent = new Move(PieceType.PAWN, "a5", "a6");
+    Move enPassent = new Move(PieceType.PAWN, "a5", "b6", true);
 
     assertFalse("En passent should be illegal", legalMoves.contains(enPassent));
+  }
+
+  @Test
+  public void testLegalMovesCastlePiecesInWay() {
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  K  -  N  R";
+
+    Board board = new Board(boardStr, Color.WHITE);
+ 
+    Set<Move> legalMoves = board.legalMoves();
+
+    Move castle = new Move(PieceType.KING, "e1", "g1");
+
+    assertFalse("Castling kingside shouldn't be a move", legalMoves.contains(castle));
+  }
+
+  @Test
+  public void testLegalMovesCastlePiecesInWay2() {
+    String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "R  b  -  -  K  -  -  -";
+
+    Board board = new Board(boardStr, Color.WHITE);
+ 
+    Set<Move> legalMoves = board.legalMoves();
+
+    Move castle = new Move(PieceType.KING, "e1", "c1");
+
+    assertFalse("Castling queenside shouldn't be a move", legalMoves.contains(castle));
+  }
+
+  @Test
+  public void testLegalMovesCastlePiecesInWay3() {
+    String boardStr = "-  -  -  -  k  b  n  r" + "\n" +
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  K  -  -  -";
+
+    Board board = new Board(boardStr, Color.BLACK);
+ 
+    Set<Move> legalMoves = board.legalMoves();
+
+    Move castle = new Move(PieceType.KING, "e8", "c8");
+
+    assertFalse("Castling kingside shouldn't be a move", legalMoves.contains(castle));
   }
 
   @Test
@@ -616,7 +686,7 @@ public class BoardTests {
 
     Move castle = new Move(PieceType.KING, "e1", "g1");
 
-    assertFalse("Castling kingside shouldn't be a move", !legalMoves.contains(castle));
+    assertFalse("Castling kingside shouldn't be a move", legalMoves.contains(castle));
   }
 
   @Test
@@ -636,7 +706,7 @@ public class BoardTests {
 
     Move castle = new Move(PieceType.KING, "e1", "g1");
 
-    assertFalse("Castling kingside shouldn't be a move", !legalMoves.contains(castle));
+    assertFalse("Castling kingside shouldn't be a move", legalMoves.contains(castle));
   }
 
   @Test
@@ -656,7 +726,7 @@ public class BoardTests {
 
     Move castle = new Move(PieceType.KING, "e8", "c8");
 
-    assertFalse("Castling queenside shouldn't be a move", !legalMoves.contains(castle));
+    assertFalse("Castling queenside shouldn't be a move", legalMoves.contains(castle));
   }
 
   @Test
@@ -1078,7 +1148,7 @@ public class BoardTests {
   }
 
   @Test
-  public void testMovePieceRooK() {
+  public void testMovePieceRook() {
     String boardStr = "-  -  -  -  k  -  -  -" + "\n" +
                       "-  -  -  -  -  -  -  -" + "\n" + 
                       "-  -  -  -  -  -  -  -" + "\n" + 

@@ -413,7 +413,12 @@ public class Move {
     }
     String startSquare = this.chessCoord(this.getStartRow(), this.getStartCol());
     String endSquare = this.chessCoord(this.getEndRow(), this.getEndCol());
-    String rep = String.format("%s%s->%s", piece, startSquare, endSquare);
+    String rep;
+    if (isPromotion()) {
+      rep = String.format("%s%s->%s:%s", piece, startSquare, endSquare, promotion);
+    } else {
+      rep = String.format("%s%s->%s", piece, startSquare, endSquare);
+    }
     return rep;
   }
 

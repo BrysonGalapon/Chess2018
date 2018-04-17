@@ -18,7 +18,7 @@ public class Knight implements Piece {
   public Knight(Color color) {
     this.color = color; 
     this.numMoved = 0;
-    this.type = PieceType.KING;
+    this.type = PieceType.KNIGHT;
   }
 
   @Override

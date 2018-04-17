@@ -26,6 +26,19 @@ public class Board {
   private final int NUM_COLS=8;
   // number of rows on the chess board
   private final int NUM_ROWS=8;
+  // square where black king is initially located
+  private final Tuple<Integer, Integer> blackKingInitSq=new Tuple<>(7,4);
+  // square where white king is initially located
+  private final Tuple<Integer, Integer> whiteKingInitSq=new Tuple<>(0,4);
+
+  // white kingside castle squares 
+  private final List<Tuple<Integer,Integer>> whiteKCastleSq=new ArrayList<>();
+  // white queenside castle squares
+  private final List<Tuple<Integer,Integer>> whiteQCastleSq=new ArrayList<>();
+  // black kingside castle squares
+  private final List<Tuple<Integer,Integer>> blackKCastleSq=new ArrayList<>();
+  // black queenside castle squares
+  private final List<Tuple<Integer,Integer>> blackQCastleSq=new ArrayList<>();
 
   /**
    * Create a new Board
@@ -39,6 +52,19 @@ public class Board {
     this.board = new Piece[NUM_ROWS][NUM_COLS];
     // create legal move history
     this.legalMoveHistory = new HashMap<String, Set<Move>>();
+
+    // populate white kingside castle squares
+    whiteKCastleSq.add(new Tuple<>(0,5));
+    whiteKCastleSq.add(new Tuple<>(0,6));
+    // populate white queenside castle squares
+    whiteQCastleSq.add(new Tuple<>(0,3));
+    whiteQCastleSq.add(new Tuple<>(0,2));
+    // populate black kingside castle squares
+    blackKCastleSq.add(new Tuple<>(7,5));
+    blackKCastleSq.add(new Tuple<>(7,6));
+    // populate black queenside castle squares
+    blackQCastleSq.add(new Tuple<>(7,3));
+    blackQCastleSq.add(new Tuple<>(7,2));
 
     // set first turn to white
     this.turn = Color.WHITE;
@@ -94,6 +120,19 @@ public class Board {
     // create legal move history
     this.legalMoveHistory = new HashMap<String, Set<Move>>();
 
+    // populate white kingside castle squares
+    whiteKCastleSq.add(new Tuple<>(0,5));
+    whiteKCastleSq.add(new Tuple<>(0,6));
+    // populate white queenside castle squares
+    whiteQCastleSq.add(new Tuple<>(0,3));
+    whiteQCastleSq.add(new Tuple<>(0,2));
+    // populate black kingside castle squares
+    blackKCastleSq.add(new Tuple<>(7,5));
+    blackKCastleSq.add(new Tuple<>(7,6));
+    // populate black queenside castle squares
+    blackQCastleSq.add(new Tuple<>(7,3));
+    blackQCastleSq.add(new Tuple<>(7,2));
+
     // set first turn to white
     this.turn = turn;
 
@@ -133,6 +172,19 @@ public class Board {
     this.board = new Piece[NUM_ROWS][NUM_COLS];
     // create legal move history
     this.legalMoveHistory = new HashMap<String, Set<Move>>();
+
+    // populate white kingside castle squares
+    whiteKCastleSq.add(new Tuple<>(0,5));
+    whiteKCastleSq.add(new Tuple<>(0,6));
+    // populate white queenside castle squares
+    whiteQCastleSq.add(new Tuple<>(0,3));
+    whiteQCastleSq.add(new Tuple<>(0,2));
+    // populate black kingside castle squares
+    blackKCastleSq.add(new Tuple<>(7,5));
+    blackKCastleSq.add(new Tuple<>(7,6));
+    // populate black queenside castle squares
+    blackQCastleSq.add(new Tuple<>(7,3));
+    blackQCastleSq.add(new Tuple<>(7,2));
 
     // set first turn to white
     this.turn = turn;
@@ -298,15 +350,25 @@ public class Board {
    * @param move move to be played on this board
    */
   public void move(Move move) {
-//    if (!legalMoves().contains(move)) {
-//      // don't do anything if move isn't legal
-//      // NOTE: might choose to remove this check when
-//      //        code that is using board class is verified
-//      //        to not give illegal moves - this will
-//      //        improve performance
-//      return;
-//    }
+    if (!legalMoves().contains(move)) {
+      // don't do anything if move isn't legal
+      // NOTE: might choose to remove this check when
+      //        code that is using board class is verified
+      //        to not give illegal moves - this will
+      //        improve performance
+      return;
+    }
 
+    // pass on move after verifying that move is legal
+    moveNoCheck(move);
+  }
+
+  /**
+   * Make a move on this board, without checking if move is illegal
+   *  - if move is legal, toggles player turn
+   *  @param move move to be played on this board
+   */
+  private void moveNoCheck(Move move) {
     // determine whether move is one of:
     //  - en passent
     //  - castle
@@ -343,6 +405,7 @@ public class Board {
       Piece king = clearSquare(move.getStartRow(), move.getStartCol());
 
       addPiece(king, endRow, endCol);
+      // update the position of the king
       king.indicateMoved();
 
       // move appropriate rook to other side of king
@@ -397,7 +460,7 @@ public class Board {
       // place the piece at target square
       addPiece(movingPiece, endRow, endCol);
       movingPiece.indicateMoved();
-    }
+   }
 
     // update the moveList to record the move just played
     this.moveList.add(move);
@@ -417,9 +480,53 @@ public class Board {
       return this.legalMoveHistory.get(compressedBoard);
     }
 
+    boolean kingInCheck = inCheck();
+
+    // get the squares that are under control by opposite team
+    Set<Tuple<Integer, Integer>> threatSquares = threatenedSquares();
+    // get squares that opposite team is pinning
+    Set<Tuple<Integer, Integer>> pinSquares = pinnedSquares();
+
+    // compute set of legal moves
+    Piece piece;
     Set<Move> legalMoveSet = new HashSet<>();
-    // TODO 
-    // Compute set of legal moves
+    for (int row=0; row<NUM_ROWS; row++) {
+      for (int col=0; col<NUM_COLS; col++) {
+        // don't do anything if there's no piece
+        if (!containsPiece(row,col)) {continue;}
+
+        piece = getPiece(row,col);
+        // don't do anything if piece is of opposite color
+        if (!piece.getColor().equals(getTurn())) {continue;}
+
+        // piece can't do anything if it is pinned
+        if (pinSquares.contains(new Tuple<Integer,Integer>(row,col))) {continue;}
+
+        // add the legal moves of that piece
+        switch(piece.getType()) {
+          case KING:
+            legalMovesKing(row, col, kingInCheck, legalMoveSet, threatSquares);
+            break;
+          case QUEEN:
+            legalMovesQueen(row, col, kingInCheck, legalMoveSet);
+            break;
+          case PAWN:
+            legalMovesPawn(row, col, kingInCheck, legalMoveSet);
+            break;
+          case ROOK:
+            legalMovesRook(row, col, kingInCheck, legalMoveSet);
+            break;
+          case KNIGHT:
+            legalMovesKnight(row, col, kingInCheck, legalMoveSet);
+            break;
+          case BISHOP:
+            legalMovesBishop(row, col, kingInCheck, legalMoveSet);
+            break;
+          default:
+            throw new Error("Unhandled Type Input");
+        }
+      }
+    }
 
     // add unmodifiable version of legal moves to hashmap for future calls
     this.legalMoveHistory.put(compressedBoard, Collections.unmodifiableSet(legalMoveSet));
@@ -642,12 +749,8 @@ public class Board {
   /**
    * Toggle the side to move from white to black, or black to white
    */
-  private void toggleTurn() {
-    if (this.getTurn().equals(Color.WHITE)) {
-      this.turn = Color.BLACK;
-    } else {
-      this.turn = Color.WHITE;
-    }
+  public void toggleTurn() {
+    this.turn = oppositeColor(this.turn);
   }
 
   /**
@@ -655,9 +758,11 @@ public class Board {
    *  it is on a certain square
    * @param row row at which king is located
    * @param col column at which king is located
+   * @param signalCheck whether or not position is in check
    * @param legalMoves set of moves to add legal king moves to
+   * @param threatSquares a set of squares that is controlled by the opponent
    */
-  private void legalMovesKing(int row, int col, Set<Move> legalMoves) {
+  private void legalMovesKing(int row, int col, boolean signalCheck, Set<Move> legalMoves, Set<Tuple<Integer, Integer>> threatSquares) {
     int square_row;
     int square_col;
     // look at all squares adjacent to king
@@ -668,37 +773,236 @@ public class Board {
 
         square_row = row+yOffset;
         square_col = col+xOffset;
-        // only look at squares within bounds of board
+        // don't look at squares outside bounds of board
         if (square_row < 0 || square_row > 7) {continue;}
         if (square_col < 0 || square_col > 7) {continue;}
+        
+        // don't look at squares controlled by opponent
+        if (threatSquares.contains(new Tuple<Integer, Integer>(square_row, square_col))) {continue;}
 
         if (containsPiece(square_row, square_col)) {
+          // possible move square contains a piece
+          Piece otherPiece = getPiece(square_row, square_col);
+          
+          // don't do anything if piece is of same color
+          if (otherPiece.getColor().equals(getTurn())) {continue;}
+
+          // add a capture move
+          Move move = new Move(PieceType.KING, row, col, square_row, square_col, true);
+
+          // ... but only if it is check
+          if (signalCheck) {
+            // make the move on the board
+            this.moveNoCheck(move);
+
+            // toggle the turn as if player was moving again
+            this.toggleTurn();
+
+            // if making move doesn't put king in check, then legal
+            if (!inCheck()) {
+              legalMoves.add(move);
+            }
+
+            // change the turn back
+            this.toggleTurn();
+            // undo the move played
+            this.undoLastMove();
+          } else {
+            legalMoves.add(move);
+          }
         } else {
+          Move move = new Move(PieceType.KING, row, col, square_row, square_col);
+          // add a king move
+          // ... but only if it is check
+          if (signalCheck) {
+            // make the move on the board
+            this.moveNoCheck(move);
+
+            // toggle the turn as if player was moving again
+            this.toggleTurn();
+
+            // if making move doesn't put king in check, then legal
+            if (!inCheck()) {
+              legalMoves.add(move);
+            }
+
+            // change the turn back
+            this.toggleTurn();
+            // undo the move played
+            this.undoLastMove();
+          } else {
+            legalMoves.add(move);
+          }
         }
       }
     }
+
+    // can't castle if in check
+    if (signalCheck) {return;}
+
+    // get king and its position
+    Piece king = getPiece(row, col);
+    Tuple<Integer, Integer> kingPos = new Tuple<>(row, col);
+
+    Color side = getTurn();
+
+    // can't castle if king is not in initial position
+    if (side.equals(Color.WHITE)) {
+      if (!kingPos.equals(whiteKingInitSq)) {return;}
+    } else {
+      if (!kingPos.equals(blackKingInitSq)) {return;}
+    }
+
+    // can't castle if king moved
+    if (king.hasMoved()) {return;}
+ 
+    // add castling moves
+    addCastleKingSide(threatSquares, legalMoves);
+    addCastleQueenSide(threatSquares, legalMoves);
   }
+
+  /**
+   * Adds a castling kingside move to set of legal moves, if it castling is legal
+   * @param threatSquares a set of squares that is controlled by the opponent
+   * @param legalMoves set of legal moves to add castling to, if castling kingside is legal
+   */
+  private void addCastleKingSide(Set<Tuple<Integer, Integer>> threatSquares, Set<Move> legalMoves) {
+    Color side = getTurn();
+    // set rook squares and castling list for turn
+    Tuple<Integer, Integer> rookSq;
+    List<Tuple<Integer, Integer>> castleSqs;
+    
+    if (side.equals(Color.WHITE)) {
+      rookSq = new Tuple<>(0,7);
+      castleSqs = whiteKCastleSq;
+    } else {
+      rookSq = new Tuple<>(7,7);
+      castleSqs = blackKCastleSq;
+    }
+
+    int rookSqRow = rookSq.x();
+    int rookSqCol = rookSq.y();
+
+    // can't castle if rook isn't on its home square
+    if (!containsPiece(rookSqRow, rookSqCol)) {return;}
+    Piece rook = getPiece(rookSqRow, rookSqCol);
+
+    // can't castle if piece on the home square isn't actually a rook
+    //  - nor can't castle if piece on home square isn't the same color as the king
+    //  - nor can't castle if rook has moved
+    if (!rook.getType().equals(PieceType.ROOK) || !rook.getColor().equals(side) || rook.hasMoved()) {return;}
+
+    // can't castle if king passes through check or into check
+    //  - also can't castle if pieces occupy castle squares
+    for (Tuple<Integer, Integer> square : castleSqs) {
+      if (threatSquares.contains(square)) {return;}
+      if (containsPiece(square.x(), square.y())) {return;}
+    }
+
+    // castling kingside is verified to be a legal move
+    Move castleMove;
+    if (side.equals(Color.WHITE)) {
+      castleMove = new Move(PieceType.KING, "e1", "g1");
+    } else {
+      castleMove = new Move(PieceType.KING, "e8", "g8");
+    }
+    legalMoves.add(castleMove);
+  }
+
+  /**
+   * Adds a castling queenside move to set of legal moves, if it castling is legal
+   * @param threatSquares a set of squares that is controlled by the opponent
+   * @param legalMoves set of legal moves to add castling to, if castling queenside is legal
+   */
+  private void addCastleQueenSide(Set<Tuple<Integer, Integer>> threatSquares, Set<Move> legalMoves) {
+    Color side = getTurn();
+    // set rook squares and castling list for turn
+    Tuple<Integer, Integer> rookSq;
+    List<Tuple<Integer, Integer>> castleSqs;
+    if (side.equals(Color.WHITE)) {
+      rookSq = new Tuple<>(0,0);
+      castleSqs = whiteQCastleSq;
+    } else {
+      rookSq = new Tuple<>(7,0);
+      castleSqs = blackQCastleSq;
+    }
+
+    int rookSqRow = rookSq.x();
+    int rookSqCol = rookSq.y();
+
+    // can't castle if rook isn't on its home square
+    if (!containsPiece(rookSqRow, rookSqCol)) {return;}
+    Piece rook = getPiece(rookSqRow, rookSqCol);
+    // can't castle if piece on the home square isn't actually a rook
+    //  - nor can't castle if piece on home square isn't the same color as the king
+    //  - nor can't castle if rook has moved
+    if (!rook.getType().equals(PieceType.ROOK) || !rook.getColor().equals(side) || rook.hasMoved()) {return;}
+
+    // can't castle if king passes through check or into check
+    for (Tuple<Integer, Integer> square : castleSqs) {
+      if (threatSquares.contains(square)) {return;}
+      if (containsPiece(square.x(), square.y())) {return;}
+    }
+
+    // can't castle if square in between rook+castleSqs is occupied
+    Tuple<Integer, Integer> lastCastleSq = castleSqs.get(castleSqs.size()-1);
+    if (containsPiece(lastCastleSq.x(), lastCastleSq.y()-1)) {return;}
+
+    // castling kingside is verified to be a legal move
+    Move castleMove;
+    if (side.equals(Color.WHITE)) {
+      castleMove = new Move(PieceType.KING, "e1", "c1");
+    } else {
+      castleMove = new Move(PieceType.KING, "e8", "c8");
+    }
+    legalMoves.add(castleMove);
+  }
+
+
 
   /**
    * Add to set of moves that a queen can make on this board if
    *  it is on a certain square and is not pinned
    * @param row row at which queen is located
    * @param col column at which queen is located
+   * @param signalCheck whether or not position is in check
    * @param legalMoves set of moves to add legal queen moves to
    */
-  private void legalMovesQueen(int row, int col, Set<Move> legalMoves) {
-    //TODO
-  }
+  private void legalMovesQueen(int row, int col, boolean signalCheck, Set<Move> legalMoves) {
+    Set<Tuple<Integer, Integer>> threatSquares = threatenedSquaresQueen(row, col, getTurn());
+    int square_row;
+    int square_col;
+    Move move;
+    for (Tuple<Integer, Integer> square : threatSquares) {
+      square_row = square.x();
+      square_col = square.y();
+      // if threatened square contains a piece, then it must be a capture - otherwise it isn't a capture
+      if (containsPiece(square_row, square_col)) {
+        move = new Move(PieceType.QUEEN, row, col, square_row, square_col, true);
+      } else {
+        move = new Move(PieceType.QUEEN, row, col, square_row, square_col);
+      }
 
-  /**
-   * Add to set of moves that a pawn can make on this board if
-   *  it is on a certain square and is not pinned
-   * @param row row at which pawn is located
-   * @param col column at which pawn is located
-   * @param legalMoves set of moves to add legal pawn moves to
-   */
-  private void legalMovesPawn(int row, int col, Set<Move> legalMoves) {
-    //TODO
+      if (signalCheck) {
+        // make the move on the board
+        this.moveNoCheck(move);
+
+        // toggle the turn as if player was moving again
+        this.toggleTurn();
+
+        // if making move doesn't put king in check, then legal
+        if (!inCheck()) {
+          legalMoves.add(move);
+        }
+
+        // change the turn back
+        this.toggleTurn();
+        // undo the move played
+        this.undoLastMove();
+      } else {
+        legalMoves.add(move);
+      }
+    }
   }
 
   /**
@@ -706,21 +1010,89 @@ public class Board {
    *  it is on a certain square and is not pinned
    * @param row row at which rook is located
    * @param col column at which rook is located
+   * @param signalCheck whether or not position is in check
    * @param legalMoves set of moves to add legal rook moves to
    */
-  private void legalMovesRook(int row, int col, Set<Move> legalMoves) {
-    //TODO
-  }
+  private void legalMovesRook(int row, int col, boolean signalCheck, Set<Move> legalMoves) {
+    Set<Tuple<Integer, Integer>> threatSquares = threatenedSquaresRook(row, col, getTurn());
+    int square_row;
+    int square_col;
+    Move move;
+    for (Tuple<Integer, Integer> square : threatSquares) {
+      square_row = square.x();
+      square_col = square.y();
+      // if threatened square contains a piece, then it must be a capture - otherwise it isn't a capture
+      if (containsPiece(square_row, square_col)) {
+        move = new Move(PieceType.ROOK, row, col, square_row, square_col, true);
+      } else {
+        move = new Move(PieceType.ROOK, row, col, square_row, square_col);
+      }
 
+      if (signalCheck) {
+        // make the move on the board
+        this.moveNoCheck(move);
+
+        // toggle the turn as if player was moving again
+        this.toggleTurn();
+
+        // if making move doesn't put king in check, then legal
+        if (!inCheck()) {
+          legalMoves.add(move);
+        }
+
+        // change the turn back
+        this.toggleTurn();
+        // undo the move played
+        this.undoLastMove();
+      } else {
+        legalMoves.add(move);
+      }
+    }
+  }
+  
   /**
    * Add to set of moves that a knight can make on this board if
    *  it is on a certain square and is not pinned
    * @param row row at which knight is located
    * @param col column at which knight is located
+   * @param signalCheck whether or not position is in check
    * @param legalMoves set of moves to add legal knight moves to
    */
-  private void legalMovesKnight(int row, int col, Set<Move> legalMoves) {
-    //TODO
+  private void legalMovesKnight(int row, int col, boolean signalCheck, Set<Move> legalMoves) {
+    Set<Tuple<Integer, Integer>> threatSquares = threatenedSquaresKnight(row, col, getTurn());
+    int square_row;
+    int square_col;
+    Move move;
+    for (Tuple<Integer, Integer> square : threatSquares) {
+      square_row = square.x();
+      square_col = square.y();
+      // if threatened square contains a piece, then it must be a capture - otherwise it isn't a capture
+      if (containsPiece(square_row, square_col)) {
+        move = new Move(PieceType.KNIGHT, row, col, square_row, square_col, true);
+      } else {
+        move = new Move(PieceType.KNIGHT, row, col, square_row, square_col);
+      }
+
+      if (signalCheck) {
+        // make the move on the board
+        this.moveNoCheck(move);
+
+        // toggle the turn as if player was moving again
+        this.toggleTurn();
+
+        // if making move doesn't put king in check, then legal
+        if (!inCheck()) {
+          legalMoves.add(move);
+        }
+
+        // change the turn back
+        this.toggleTurn();
+        // undo the move played
+        this.undoLastMove();
+      } else {
+        legalMoves.add(move);
+      }
+    }
   }
 
   /**
@@ -728,10 +1100,190 @@ public class Board {
    *  it is on a certain square and is not pinned
    * @param row row at which bishop is located
    * @param col column at which bishop is located
+   * @param signalCheck whether or not position is in check
    * @param legalMoves set of moves to add legal bishop moves to
    */
-  private void legalMovesBishop(int row, int col, Set<Move> legalMoves) {
-    //TODO
+  private void legalMovesBishop(int row, int col, boolean signalCheck, Set<Move> legalMoves) {
+    Set<Tuple<Integer, Integer>> threatSquares = threatenedSquaresBishop(row, col, getTurn());
+    int square_row;
+    int square_col;
+    Move move;
+    for (Tuple<Integer, Integer> square : threatSquares) {
+      square_row = square.x();
+      square_col = square.y();
+      // if threatened square contains a piece, then it must be a capture - otherwise it isn't a capture
+      if (containsPiece(square_row, square_col)) {
+        move = new Move(PieceType.BISHOP, row, col, square_row, square_col, true);
+      } else {
+        move = new Move(PieceType.BISHOP, row, col, square_row, square_col);
+      }
+
+      if (signalCheck) {
+        // make the move on the board
+        this.moveNoCheck(move);
+
+        // toggle the turn as if player was moving again
+        this.toggleTurn();
+
+        // if making move doesn't put king in check, then legal
+        if (!inCheck()) {
+          legalMoves.add(move);
+        }
+
+        // change the turn back
+        this.toggleTurn();
+        // undo the move played
+        this.undoLastMove();
+      } else {
+        legalMoves.add(move);
+      }
+    }
+  }
+
+  /**
+   * Add to set of moves that a pawn can make on this board if
+   *  it is on a certain square and is not pinned
+   * @param row row at which pawn is located
+   * @param col column at which pawn is located
+   * @param signalCheck whether or not position is in check
+   * @param legalMoves set of moves to add legal pawn moves to
+   */
+  private void legalMovesPawn(int row, int col, boolean signalCheck, Set<Move> legalMoves) {
+    Set<Move> possibleMoves = new HashSet<Move>();
+
+    // grab the pawn
+    Piece pawn = getPiece(row, col);
+
+    Color color = pawn.getColor();
+    // set yOffset to point in direction of pawn advance
+    // set initRow to rank where pawn must have started
+    // set promoteRow to 1 LESS rank before pawn promotes
+    int yOffset;
+    int initRow;
+    int promoteRow;
+    if (color.equals(Color.WHITE)) {
+      yOffset = 1;
+      initRow = 1;
+      promoteRow = 6;
+    } else {
+      yOffset = -1;
+      initRow = 6;
+      promoteRow = 1;
+    }
+
+    boolean hasPieceInFront = containsPiece(row+yOffset,col);
+
+    // if no piece blocking pawn's path, pawn can move forward 
+    //  one square
+    //    - check for promotion if on second-to-last rank
+    if (!hasPieceInFront) {
+      if (row == promoteRow) {
+        possibleMoves.add(new Move(PieceType.PAWN, row, col, row+yOffset, col, false, PieceType.QUEEN));
+        possibleMoves.add(new Move(PieceType.PAWN, row, col, row+yOffset, col, false, PieceType.ROOK));
+        possibleMoves.add(new Move(PieceType.PAWN, row, col, row+yOffset, col, false, PieceType.BISHOP));
+        possibleMoves.add(new Move(PieceType.PAWN, row, col, row+yOffset, col, false, PieceType.KNIGHT));
+      } else {
+        possibleMoves.add(new Move(PieceType.PAWN, row, col, row+yOffset, col));
+      }
+    }
+
+    // if pawn hasn't moved yet and no piece blocking, then
+    //  pawn can move two squares forward
+    if (row == initRow && !hasPieceInFront) {
+      possibleMoves.add(new Move(PieceType.PAWN, row, col, row+2*yOffset, col));
+    }
+
+    // check to see if pawn captures are valid, including en passent
+    int squareRow;
+    int squareCol;
+
+    // LEFT CAPTURE
+    squareRow = row+yOffset;
+    squareCol = col-1;
+    if (inBounds(squareRow, squareCol)) {
+      if (containsPiece(squareRow, squareCol) && !getPiece(squareRow, squareCol).getColor().equals(color)) {
+        // check if capture square is in bounds, and contains a piece that is of the opposite color
+        //  - check for promotion square
+        if (row == promoteRow) {
+          possibleMoves.add(new Move(PieceType.PAWN, row, col, squareRow, squareCol, true, PieceType.QUEEN));
+          possibleMoves.add(new Move(PieceType.PAWN, row, col, squareRow, squareCol, true, PieceType.ROOK));
+          possibleMoves.add(new Move(PieceType.PAWN, row, col, squareRow, squareCol, true, PieceType.BISHOP));
+          possibleMoves.add(new Move(PieceType.PAWN, row, col, squareRow, squareCol, true, PieceType.KNIGHT));
+        } else {
+          possibleMoves.add(new Move(PieceType.PAWN, row, col, squareRow, squareCol, true));
+        }
+      }
+
+      // check for enPassent
+      Move lastMove = getLastMove();
+      if (lastMove != null) {
+        int lmEndRow = lastMove.getEndRow();
+        int lmStartRow = lastMove.getStartRow();
+
+        boolean movedPawn = lastMove.getPieceType().equals(PieceType.PAWN);
+        boolean pushedPawn2Sq = Math.abs(lmEndRow-lmStartRow) == 2;
+        boolean landedByPawn = (lmEndRow == row) && col-lastMove.getEndCol() == 1;
+
+        if (movedPawn && pushedPawn2Sq && landedByPawn) {
+          possibleMoves.add(new Move(PieceType.PAWN, row, col, squareRow, squareCol, true));
+        }
+      }
+    }
+    // RIGHT CAPTURE
+    squareRow = row+yOffset;
+    squareCol = col+1;
+    if (inBounds(squareRow, squareCol)) {
+      if (containsPiece(squareRow, squareCol) && !getPiece(squareRow, squareCol).getColor().equals(color)) {
+        // check if capture square is in bounds, and contains a piece that is of the opposite color
+        //  - check for promotion square
+        if (row == promoteRow) {
+          possibleMoves.add(new Move(PieceType.PAWN, row, col, squareRow, squareCol, true, PieceType.QUEEN));
+          possibleMoves.add(new Move(PieceType.PAWN, row, col, squareRow, squareCol, true, PieceType.ROOK));
+          possibleMoves.add(new Move(PieceType.PAWN, row, col, squareRow, squareCol, true, PieceType.BISHOP));
+          possibleMoves.add(new Move(PieceType.PAWN, row, col, squareRow, squareCol, true, PieceType.KNIGHT));
+        } else {
+          possibleMoves.add(new Move(PieceType.PAWN, row, col, squareRow, squareCol, true));
+        }
+      }
+
+      // check for enPassent
+      Move lastMove = getLastMove();
+      if (lastMove != null) {
+        int lmEndRow = lastMove.getEndRow();
+        int lmStartRow = lastMove.getStartRow();
+
+        boolean movedPawn = lastMove.getPieceType().equals(PieceType.PAWN);
+        boolean pushedPawn2Sq = Math.abs(lmEndRow-lmStartRow) == 2;
+        boolean landedByPawn = (lmEndRow == row) && lastMove.getEndCol()-col == 1;
+
+        if (movedPawn && pushedPawn2Sq && landedByPawn) {
+          possibleMoves.add(new Move(PieceType.PAWN, row, col, squareRow, squareCol, true));
+        }
+      }
+    }
+
+    if (signalCheck) {
+      for (Move move : possibleMoves) {
+        // make the move on the board
+        this.moveNoCheck(move);
+
+        // toggle the turn as if player was moving again
+        this.toggleTurn();
+
+        // if making move doesn't put king in check, then legal
+        if (!inCheck()) {
+          legalMoves.add(move);
+        }
+
+        // change the turn back
+        this.toggleTurn();
+        // undo the move played
+        this.undoLastMove();
+      }
+    } else {
+      // if not in check, all possible moves are legal
+      legalMoves.addAll(possibleMoves);
+    }
   }
 
   /**
@@ -745,7 +1297,7 @@ public class Board {
     if (numCaptured == 0) {return null;}
 
     Piece piece = capturedPieces.get(numCaptured-1);
-    capturedPieces.remove(piece);
+    capturedPieces.remove(numCaptured-1);
     return piece;
   }
 
@@ -760,10 +1312,725 @@ public class Board {
     if (numPromoted == 0) {return null;}
 
     Piece piece = promotedPieces.get(numPromoted-1);
-    promotedPieces.remove(piece);
+    promotedPieces.remove(numPromoted-1);
     return piece;
   }
 
+  /**
+   * Get a set of threatened squares on the board for opponent
+   * @return a set of all squares that are threatened on this board
+   *  - a square is threatened if (assuming it is the opponents turn), the opponent can capture a piece on that square
+   */
+  private Set<Tuple<Integer, Integer>> threatenedSquares() {
+    // initialize set
+    Set<Tuple<Integer, Integer>> squares = new HashSet<Tuple<Integer, Integer>>();
+
+    // get opposite color of the current turn
+    Color oppColor = oppositeColor(getTurn());
+
+    // loop through all squares
+    for (int row=0; row<NUM_ROWS; row++) {
+      for (int col=0; col<NUM_COLS; col++) {
+        // skip squares with no pieces
+        if (!containsPiece(row,col)) {continue;}
+
+        // skip squares with pieces of same color
+        Piece piece = getPiece(row,col);
+        if (!piece.getColor().equals(oppColor)) {continue;}
+
+        switch(piece.getType()) {
+          case KING:
+            squares.addAll(threatenedSquaresKing(row,col,oppColor));
+            break;
+          case QUEEN:
+            squares.addAll(threatenedSquaresQueen(row,col,oppColor));
+            break;
+          case PAWN:
+            squares.addAll(threatenedSquaresPawn(row,col,oppColor));
+            break;
+          case ROOK:
+            squares.addAll(threatenedSquaresRook(row,col,oppColor));
+            break;
+          case KNIGHT:
+            squares.addAll(threatenedSquaresKnight(row,col,oppColor));
+            break;
+          case BISHOP:
+            squares.addAll(threatenedSquaresBishop(row,col,oppColor));
+            break;
+          default:
+            throw new Error("Unhandled Piece Type");
+        }
+      }
+    }
+
+    return squares;
+  }
+
+  private int pinnedIterateRay(int squareRow, int squareCol, Color playerColor, List<Boolean> passedSameColorList, List<Integer> pinnedSquareList) {
+    boolean passedSameColor = passedSameColorList.get(0);
+    // make sure within boundary of board
+    if (squareRow < 0 || squareRow > 7) {return 0;}
+    if (squareCol < 0 || squareCol > 7) {return 0;}
+
+    // skip if no piece
+    if (!containsPiece(squareRow, squareCol)) {return 1;}
+    Piece piece = getPiece(squareRow, squareCol);
+    Color pieceColor = piece.getColor();
+    // if we run into a piece of opposite color without passing a piece of same color, then there is no pin
+    if (!pieceColor.equals(playerColor) && !passedSameColor) {return 0;}
+
+    // we found a piece of same color
+    if (pieceColor.equals(playerColor)) {
+      if (!passedSameColor) {
+        // first time we found piece of same color
+        //  - record possible pin square
+        //  - set the flag, and then move on
+        pinnedSquareList.add(0, squareRow);
+        pinnedSquareList.add(1, squareCol);
+        passedSameColorList.add(0, true);
+        return 1;
+      } else {
+        // second time we found piece of same color, no pin
+        return 0;
+      }
+    } else {
+      return 2;
+    }
+  }
+
+  /**
+   * Obtain the set of squares that contain pieces of the current player to move that are pinned (and therefore can't move)
+   */
+  private Set<Tuple<Integer, Integer>> pinnedSquares() {
+    Set<Tuple<Integer, Integer>> pinSquares = new HashSet<Tuple<Integer,Integer>>();
+
+    Color playerColor = getTurn();
+    // get the king position
+    Tuple<Integer, Integer> kingPos = getKingPos(playerColor);
+    int kingRow = kingPos.x();
+    int kingCol = kingPos.y();
+
+    List<Boolean> passedSameColorList = new ArrayList<>(Arrays.asList(false));
+    List<Integer> pinnedSquareList = new ArrayList<>(Arrays.asList(-1,-1));
+
+    int squareRow;
+    int squareCol;
+
+    // NORTH
+    passedSameColorList.add(0, false);
+    for (int offset=1; offset<=NUM_ROWS; offset++) {
+      squareRow = kingRow+offset;
+      squareCol = kingCol;
+
+      int value = pinnedIterateRay(squareRow, squareCol, playerColor, passedSameColorList, pinnedSquareList);
+      if (value == 0) {break;}
+      if (value == 1) {continue;}
+      if (value == 2) {
+        PieceType type = getPiece(squareRow, squareCol).getType();
+        if (type.equals(PieceType.ROOK) || type.equals(PieceType.QUEEN)) {
+          int pinSquareRow = pinnedSquareList.get(0);
+          int pinSquareCol = pinnedSquareList.get(1);
+          pinSquares.add(new Tuple<>(pinSquareRow, pinSquareCol));
+        }
+        break;
+      }
+    }
+
+    // EAST
+    passedSameColorList.add(0, false);
+    for (int offset=1; offset<=NUM_ROWS; offset++) {
+      squareRow = kingRow;
+      squareCol = kingCol+offset;
+
+      int value = pinnedIterateRay(squareRow, squareCol, playerColor, passedSameColorList, pinnedSquareList);
+      if (value == 0) {break;}
+      if (value == 1) {continue;}
+      if (value == 2) {
+        PieceType type = getPiece(squareRow, squareCol).getType();
+        if (type.equals(PieceType.ROOK) || type.equals(PieceType.QUEEN)) {
+          int pinSquareRow = pinnedSquareList.get(0);
+          int pinSquareCol = pinnedSquareList.get(1);
+          pinSquares.add(new Tuple<>(pinSquareRow, pinSquareCol));
+        }
+        break;
+      }
+    }
+
+    // SOUTH
+    passedSameColorList.add(0, false);
+    for (int offset=1; offset<=NUM_ROWS; offset++) {
+      squareRow = kingRow-offset;
+      squareCol = kingCol;
+
+      int value = pinnedIterateRay(squareRow, squareCol, playerColor, passedSameColorList, pinnedSquareList);
+      if (value == 0) {break;}
+      if (value == 1) {continue;}
+      if (value == 2) {
+        PieceType type = getPiece(squareRow, squareCol).getType();
+        if (type.equals(PieceType.ROOK) || type.equals(PieceType.QUEEN)) {
+          int pinSquareRow = pinnedSquareList.get(0);
+          int pinSquareCol = pinnedSquareList.get(1);
+          pinSquares.add(new Tuple<>(pinSquareRow, pinSquareCol));
+        }
+        break;
+      }
+    }
+
+    // WEST
+    passedSameColorList.add(0, false);
+    for (int offset=1; offset<=NUM_ROWS; offset++) {
+      squareRow = kingRow;
+      squareCol = kingCol-offset;
+
+      int value = pinnedIterateRay(squareRow, squareCol, playerColor, passedSameColorList, pinnedSquareList);
+      if (value == 0) {break;}
+      if (value == 1) {continue;}
+      if (value == 2) {
+        PieceType type = getPiece(squareRow, squareCol).getType();
+        if (type.equals(PieceType.ROOK) || type.equals(PieceType.QUEEN)) {
+          int pinSquareRow = pinnedSquareList.get(0);
+          int pinSquareCol = pinnedSquareList.get(1);
+          pinSquares.add(new Tuple<>(pinSquareRow, pinSquareCol));
+        }
+        break;
+      }
+    }
+
+    // NORTH-EAST
+    passedSameColorList.add(0, false);
+    for (int offset=1; offset<=NUM_ROWS; offset++) {
+      squareRow = kingRow+offset;
+      squareCol = kingCol+offset;
+
+      int value = pinnedIterateRay(squareRow, squareCol, playerColor, passedSameColorList, pinnedSquareList);
+      if (value == 0) {break;}
+      if (value == 1) {continue;}
+      if (value == 2) {
+        PieceType type = getPiece(squareRow, squareCol).getType();
+        if (type.equals(PieceType.BISHOP) || type.equals(PieceType.QUEEN)) {
+          int pinSquareRow = pinnedSquareList.get(0);
+          int pinSquareCol = pinnedSquareList.get(1);
+          pinSquares.add(new Tuple<>(pinSquareRow, pinSquareCol));
+        }
+        break;
+      }
+    }
+
+    // NORTH-WEST
+    passedSameColorList.add(0, false);
+    for (int offset=1; offset<=NUM_ROWS; offset++) {
+      squareRow = kingRow+offset;
+      squareCol = kingCol-offset;
+
+      int value = pinnedIterateRay(squareRow, squareCol, playerColor, passedSameColorList, pinnedSquareList);
+      if (value == 0) {break;}
+      if (value == 1) {continue;}
+      if (value == 2) {
+        PieceType type = getPiece(squareRow, squareCol).getType();
+        if (type.equals(PieceType.BISHOP) || type.equals(PieceType.QUEEN)) {
+          int pinSquareRow = pinnedSquareList.get(0);
+          int pinSquareCol = pinnedSquareList.get(1);
+          pinSquares.add(new Tuple<>(pinSquareRow, pinSquareCol));
+        }
+        break;
+      }
+    }
+
+    // SOUTH-EAST
+    passedSameColorList.add(0, false);
+    for (int offset=1; offset<=NUM_ROWS; offset++) {
+      squareRow = kingRow-offset;
+      squareCol = kingCol+offset;
+
+      int value = pinnedIterateRay(squareRow, squareCol, playerColor, passedSameColorList, pinnedSquareList);
+      if (value == 0) {break;}
+      if (value == 1) {continue;}
+      if (value == 2) {
+        PieceType type = getPiece(squareRow, squareCol).getType();
+        if (type.equals(PieceType.BISHOP) || type.equals(PieceType.QUEEN)) {
+          int pinSquareRow = pinnedSquareList.get(0);
+          int pinSquareCol = pinnedSquareList.get(1);
+          pinSquares.add(new Tuple<>(pinSquareRow, pinSquareCol));
+        }
+        break;
+      }
+    }
+
+    // SOUTH-WEST
+    passedSameColorList.add(0, false);
+    for (int offset=1; offset<=NUM_ROWS; offset++) {
+      squareRow = kingRow-offset;
+      squareCol = kingCol-offset;
+
+      int value = pinnedIterateRay(squareRow, squareCol, playerColor, passedSameColorList, pinnedSquareList);
+      if (value == 0) {break;}
+      if (value == 1) {continue;}
+      if (value == 2) {
+        PieceType type = getPiece(squareRow, squareCol).getType();
+        if (type.equals(PieceType.BISHOP) || type.equals(PieceType.QUEEN)) {
+          int pinSquareRow = pinnedSquareList.get(0);
+          int pinSquareCol = pinnedSquareList.get(1);
+          pinSquares.add(new Tuple<>(pinSquareRow, pinSquareCol));
+        }
+        break;
+      }
+    }
+
+    return pinSquares;
+  }
+
+  /**
+   * Obtain the set of squares that a king of a certain color would threaten if placed at a particular location
+   * @param row row at which the king is placed
+   * @param col column at which the king is placed
+   * @param color color of the king
+   */
+  private Set<Tuple<Integer, Integer>> threatenedSquaresKing(int row, int col, Color color) {
+    Set<Tuple<Integer, Integer>> squares = new HashSet<Tuple<Integer, Integer>>();
+    int square_row;
+    int square_col;
+    for (int xOffset=-1; xOffset<=1; xOffset++) {
+      for (int yOffset=-1; yOffset<=1; yOffset++) {
+        // don't look at same square as piece
+        if (xOffset == 0 && yOffset == 0) {continue;}
+
+        square_row = row+yOffset;
+        square_col = col+xOffset;
+
+        // don't look at squares outside bounds of board
+        if (square_row < 0 || square_row > 7) {continue;}
+        if (square_col < 0 || square_col > 7) {continue;}
+
+        if (containsPiece(square_row, square_col)) {
+          Piece piece = getPiece(square_row, square_col);
+          // only add square if piece of opposite color
+          if (piece.getColor().equals(color)) {
+            squares.add(new Tuple<>(square_row,square_col));
+          }
+        } else {
+          squares.add(new Tuple<>(square_row,square_col));
+        }
+      }
+    }
+
+    return squares;
+  }
+
+  /**
+   * Obtain the set of squares that a queen of a certain color would threaten if placed at a particular location
+   * @param row row at which the queen is placed
+   * @param col column at which the queen is placed
+   * @param color color of the queen
+   */
+  private Set<Tuple<Integer, Integer>> threatenedSquaresQueen(int row, int col, Color color) {
+    Set<Tuple<Integer, Integer>> squares = new HashSet<Tuple<Integer, Integer>>();
+
+    // queen threats are made of bishop threats...
+    squares.addAll(threatenedSquaresBishop(row,col,color));
+    // ... and rook threats
+    squares.addAll(threatenedSquaresRook(row,col,color));
+
+    return squares;
+  }
+
+  /**
+   * Obtain the set of squares that a pawn of a certain color would threaten if placed at a particular location
+   * @param row row at which the pawn is placed
+   * @param col column at which the pawn is placed
+   * @param color color of the pawn
+   */
+  private Set<Tuple<Integer, Integer>> threatenedSquaresPawn(int row, int col, Color color) {
+    Set<Tuple<Integer, Integer>> squares = new HashSet<Tuple<Integer, Integer>>();
+
+    // threatened squares are diagonal capture squares
+
+    int yOffset;
+    if (color.equals(Color.WHITE)) {
+      yOffset = 1;
+    } else {
+      yOffset = -1;
+    }
+
+    int leftSquareCol = col-1;
+    int leftSquareRow = row+yOffset;
+    int rightSquareCol = col+1;
+    int rightSquareRow = row+yOffset;
+
+    // check if left capture square is threatened
+    if (inBounds(leftSquareRow, leftSquareCol)) {
+      if (!containsPiece(leftSquareRow, leftSquareCol) || !getPiece(leftSquareRow, leftSquareCol).getColor().equals(color)) {
+        // no piece or piece but opposite color
+        squares.add(new Tuple<>(leftSquareRow, leftSquareCol));
+      }
+    }
+
+    // check if right capture square is threatened
+    if (inBounds(rightSquareRow, rightSquareCol)) {
+      if (!containsPiece(rightSquareRow, rightSquareCol) || !getPiece(rightSquareRow, rightSquareCol).getColor().equals(color)) {
+        // no piece or piece but opposite color
+        squares.add(new Tuple<>(rightSquareRow, rightSquareCol));
+      }
+    }
+
+    return squares;
+  }
+
+  /**
+   * Obtain the set of squares that a rook of a certain color would threaten if placed at a particular location
+   * @param row row at which the rook is placed
+   * @param col column at which the rook is placed
+   * @param color color of the rook
+   */
+  private Set<Tuple<Integer, Integer>> threatenedSquaresRook(int row, int col, Color color) {
+    Set<Tuple<Integer, Integer>> squares = new HashSet<Tuple<Integer, Integer>>();
+    int squareRow;
+    int squareCol;
+
+    // EAST
+    for (int offset=1; offset<=NUM_COLS; offset++) {
+      squareRow = row;
+      squareCol = col+offset;
+      if (!inBounds(squareRow, squareCol)) {break;} // out of bounds
+      if (!containsPiece(squareRow, squareCol)) {
+        // empty square, so add and continue
+        squares.add(new Tuple<>(squareRow, squareCol));
+        continue;
+      }
+
+      Piece piece = getPiece(squareRow, squareCol);
+      // if run into a piece of same color, end
+      if (piece.getColor().equals(color)) {break;}
+
+      // ran into piece of opposite color, so add and then end
+      squares.add(new Tuple<>(squareRow, squareCol));
+      break;
+    }
+
+    // NORTH
+    for (int offset=1; offset<=NUM_COLS; offset++) {
+      squareRow = row+offset;
+      squareCol = col;
+      if (!inBounds(squareRow, squareCol)) {break;} // out of bounds
+      if (!containsPiece(squareRow, squareCol)) {
+        // empty square, so add and continue
+        squares.add(new Tuple<>(squareRow, squareCol));
+        continue;
+      }
+
+      Piece piece = getPiece(squareRow, squareCol);
+      // if run into a piece of same color, end
+      if (piece.getColor().equals(color)) {break;}
+
+      // ran into piece of opposite color, so add and then end
+      squares.add(new Tuple<>(squareRow, squareCol));
+      break;
+    }
+
+    // SOUTH
+    for (int offset=1; offset<=NUM_COLS; offset++) {
+      squareRow = row-offset;
+      squareCol = col;
+      if (!inBounds(squareRow, squareCol)) {break;} // out of bounds
+      if (!containsPiece(squareRow, squareCol)) {
+        // empty square, so add and continue
+        squares.add(new Tuple<>(squareRow, squareCol));
+        continue;
+      }
+
+      Piece piece = getPiece(squareRow, squareCol);
+      // if run into a piece of same color, end
+      if (piece.getColor().equals(color)) {break;}
+
+      // ran into piece of opposite color, so add and then end
+      squares.add(new Tuple<>(squareRow, squareCol));
+      break;
+    }
+
+    // WEST
+    for (int offset=1; offset<=NUM_COLS; offset++) {
+      squareRow = row;
+      squareCol = col-offset;
+      if (!inBounds(squareRow, squareCol)) {break;} // out of bounds
+      if (!containsPiece(squareRow, squareCol)) {
+        // empty square, so add and continue
+        squares.add(new Tuple<>(squareRow, squareCol));
+        continue;
+      }
+
+      Piece piece = getPiece(squareRow, squareCol);
+      // if run into a piece of same color, end
+      if (piece.getColor().equals(color)) {break;}
+
+      // ran into piece of opposite color, so add and then end
+      squares.add(new Tuple<>(squareRow, squareCol));
+      break;
+    }
+
+    return squares;
+  }
+
+  /**
+   * Obtain the set of squares that a bishop of a certain color would threaten if placed at a particular location
+   * @param row row at which the bishop is placed
+   * @param col column at which the bishop is placed
+   * @param color color of the bishop
+   */
+  private Set<Tuple<Integer, Integer>> threatenedSquaresBishop(int row, int col, Color color) {
+    Set<Tuple<Integer, Integer>> squares = new HashSet<Tuple<Integer, Integer>>();
+    int squareRow;
+    int squareCol;
+
+    // NORTH-EAST
+    for (int offset=1; offset<=NUM_COLS; offset++) {
+      squareRow = row+offset;
+      squareCol = col+offset;
+      if (!inBounds(squareRow, squareCol)) {break;} // out of bounds
+      if (!containsPiece(squareRow, squareCol)) {
+        // empty square, so add and continue
+        squares.add(new Tuple<>(squareRow, squareCol));
+        continue;
+      }
+
+      Piece piece = getPiece(squareRow, squareCol);
+      // if run into a piece of same color, end
+      if (piece.getColor().equals(color)) {break;}
+
+      // ran into piece of opposite color, so add and then end
+      squares.add(new Tuple<>(squareRow, squareCol));
+      break;
+    }
+
+    // NORTH-WEST
+    for (int offset=1; offset<=NUM_COLS; offset++) {
+      squareRow = row+offset;
+      squareCol = col-offset;
+      if (!inBounds(squareRow, squareCol)) {break;} // out of bounds
+      if (!containsPiece(squareRow, squareCol)) {
+        // empty square, so add and continue
+        squares.add(new Tuple<>(squareRow, squareCol));
+        continue;
+      }
+
+      Piece piece = getPiece(squareRow, squareCol);
+      // if run into a piece of same color, end
+      if (piece.getColor().equals(color)) {break;}
+
+      // ran into piece of opposite color, so add and then end
+      squares.add(new Tuple<>(squareRow, squareCol));
+      break;
+    }
+
+    // SOUTH-WEST
+    for (int offset=1; offset<=NUM_COLS; offset++) {
+      squareRow = row-offset;
+      squareCol = col-offset;
+      if (!inBounds(squareRow, squareCol)) {break;} // out of bounds
+      if (!containsPiece(squareRow, squareCol)) {
+        // empty square, so add and continue
+        squares.add(new Tuple<>(squareRow, squareCol));
+        continue;
+      }
+
+      Piece piece = getPiece(squareRow, squareCol);
+      // if run into a piece of same color, end
+      if (piece.getColor().equals(color)) {break;}
+
+      // ran into piece of opposite color, so add and then end
+      squares.add(new Tuple<>(squareRow, squareCol));
+      break;
+    }
+
+    // SOUTH-EAST
+    for (int offset=1; offset<=NUM_COLS; offset++) {
+      squareRow = row-offset;
+      squareCol = col+offset;
+      if (!inBounds(squareRow, squareCol)) {break;} // out of bounds
+      if (!containsPiece(squareRow, squareCol)) {
+        // empty square, so add and continue
+        squares.add(new Tuple<>(squareRow, squareCol));
+        continue;
+      }
+
+      Piece piece = getPiece(squareRow, squareCol);
+      // if run into a piece of same color, end
+      if (piece.getColor().equals(color)) {break;}
+
+      // ran into piece of opposite color, so add and then end
+      squares.add(new Tuple<>(squareRow, squareCol));
+      break;
+    }
+
+    return squares;
+  }
+
+  /**
+   * Obtain the set of squares that a knight of a certain color would threaten if placed at a particular location
+   * @param row row at which the knight is placed
+   * @param col column at which the knight is placed
+   * @param color color of the knight
+   */
+  private Set<Tuple<Integer, Integer>> threatenedSquaresKnight(int row, int col, Color color) {
+    Set<Tuple<Integer, Integer>> squares = new HashSet<Tuple<Integer, Integer>>();
+
+    // check all 8 combinations of knight jumps
+  
+    int xOffset;
+    int yOffset;
+    int squareRow;
+    int squareCol;
+
+    xOffset = 1;
+    yOffset = 2;
+    squareRow = row+yOffset;
+    squareCol = col+xOffset;
+    if (inBounds(squareRow, squareCol)) { // check if in bounds
+      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
+        // check if no piece or not same color piece
+        squares.add(new Tuple<>(squareRow, squareCol));
+      }
+    }
+
+    xOffset = -1;
+    yOffset = 2;
+    squareRow = row+yOffset;
+    squareCol = col+xOffset;
+    if (inBounds(squareRow, squareCol)) { // check if in bounds
+      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
+        // check if no piece or not same color piece
+        squares.add(new Tuple<>(squareRow, squareCol));
+      }
+    }
+
+    xOffset = 1;
+    yOffset = -2;
+    squareRow = row+yOffset;
+    squareCol = col+xOffset;
+    if (inBounds(squareRow, squareCol)) { // check if in bounds
+      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
+        // check if no piece or not same color piece
+        squares.add(new Tuple<>(squareRow, squareCol));
+      }
+    }
+
+    xOffset = -1;
+    yOffset = -2;
+    squareRow = row+yOffset;
+    squareCol = col+xOffset;
+    if (inBounds(squareRow, squareCol)) { // check if in bounds
+      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
+        // check if no piece or not same color piece
+        squares.add(new Tuple<>(squareRow, squareCol));
+      }
+    }
+
+    xOffset = 2;
+    yOffset = 1;
+    squareRow = row+yOffset;
+    squareCol = col+xOffset;
+    if (inBounds(squareRow, squareCol)) { // check if in bounds
+      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
+        // check if no piece or not same color piece
+        squares.add(new Tuple<>(squareRow, squareCol));
+      }
+    }
+
+    xOffset = -2;
+    yOffset = 1;
+    squareRow = row+yOffset;
+    squareCol = col+xOffset;
+    if (inBounds(squareRow, squareCol)) { // check if in bounds
+      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
+        // check if no piece or not same color piece
+        squares.add(new Tuple<>(squareRow, squareCol));
+      }
+    }
+
+    xOffset = 2;
+    yOffset = -1;
+    squareRow = row+yOffset;
+    squareCol = col+xOffset;
+    if (inBounds(squareRow, squareCol)) { // check if in bounds
+      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
+        // check if no piece or not same color piece
+        squares.add(new Tuple<>(squareRow, squareCol));
+      }
+    }
+
+    xOffset = -2;
+    yOffset = -1;
+    squareRow = row+yOffset;
+    squareCol = col+xOffset;
+    if (inBounds(squareRow, squareCol)) { // check if in bounds
+      if (!containsPiece(squareRow, squareCol) || !getPiece(squareRow, squareCol).getColor().equals(color)) {
+        // check if no piece or not same color piece
+        squares.add(new Tuple<>(squareRow, squareCol));
+      }
+    }
+
+    return squares;
+  }
+
+  /**
+   * Get the opposite color 
+   *  - BLACK to WHITE
+   *  - WHITE to BLACK
+   * @param color the color to find the opposite of 
+   * @return the color opposite to color
+   */
+  private Color oppositeColor(Color color) {
+    if (color.equals(Color.WHITE)) {
+      return Color.BLACK;
+    } else {
+      return Color.WHITE;
+    }
+  }
+
+  /**
+   * Obtain the location of a particular king on this board
+   * @param color the color of the king to find
+   * @return the location of the king with color color
+   */
+  private Tuple<Integer, Integer> getKingPos (Color color) {
+    for (int row=0; row<NUM_ROWS; row++) {
+      for (int col=0; col<NUM_COLS; col++) {
+        // skip if the square doesn't contain a piece
+        if (!containsPiece(row,col)) {continue;}
+        Piece piece = getPiece(row,col);
+        // skip if the piece isn't a king
+        if (!piece.getType().equals(PieceType.KING)) {continue;}
+
+        // check for the color of the king
+        if (piece.getColor().equals(color)) {
+          return new Tuple<>(row,col);
+        } else {
+          continue;
+        }
+      }
+    }
+
+    throw new Error("Couldn't find a king - THERE SHOULD ALWAYS BE A KING");
+  }
+
+  /**
+   * Check if the king is in check in current position
+   * @return true iff the king is in check, else false
+   */
+  public boolean inCheck () {
+    // get squares under control by opposite team
+    Set<Tuple<Integer, Integer>> threatSquares = threatenedSquares();
+    // in check if king is being threatened by opponent
+    return threatSquares.contains(getKingPos(getTurn()));
+  }
+
+  /**
+   * Check if a square is in boundary of board
+   * @param row row of query square
+   * @param col column of query square
+   * @return true iff the square is in bounds of board
+   */
+  private boolean inBounds(int row, int col) {
+    return (row >= 0 && row <= 7 && col >= 0 && col <= 7);
+  }
 
 }
 

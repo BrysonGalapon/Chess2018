@@ -1,0 +1,3 @@
+Optimizations:
+
+  - legalMoves: One repeatedly loops through all the squares in the board, but we keep looping through empty squares. Would be useful to figure out which squares are occupied and loop only through those squares

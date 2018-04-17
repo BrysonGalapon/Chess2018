@@ -18,7 +18,7 @@ public class Rook implements Piece {
   public Rook(Color color) {
     this.color = color; 
     this.numMoved = 0;
-    this.type = PieceType.KING;
+    this.type = PieceType.ROOK;
   }
 
   @Override

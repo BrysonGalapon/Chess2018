@@ -18,7 +18,7 @@ public class Queen implements Piece {
   public Queen(Color color) {
     this.color = color; 
     this.numMoved = 0;
-    this.type = PieceType.KING;
+    this.type = PieceType.QUEEN;
   }
 
   @Override
