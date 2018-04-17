@@ -264,86 +264,97 @@ public class Board {
     if (move == null) {return;}
 
     // undo the move by type of move
-    if (isEnPassent(move)) {
-      // get last piece that was captured
-      Piece capturedPiece = popLastCapturedPiece();
-
-      int startRow = move.getStartRow();
-      int startCol = move.getStartCol();
-      int endCol = move.getEndCol();
-
-      // get pawn that did en passent
-      Piece pawn = clearSquare(move.getEndRow(), endCol);
-      addPiece(pawn, startRow, startCol);
-      pawn.indicateBackward();
-
-      // figure out which side captured piece should be placed
-      boolean capturedRight = (endCol-startCol) > 0;
-      if (capturedRight) {
-        addPiece(capturedPiece, startRow, startCol+1);
-      } else {
-        addPiece(capturedPiece, startRow, startCol-1);
-      }
-
-    } else if (move.isCastleMove()) {
-
-      // pick up the king
-      int endRow = move.getEndRow();
-      int endCol = move.getEndCol();
-      Piece king = clearSquare(endRow, endCol);
-
-      // pick up the rook
-      int rookEndCol = (endCol == 2) ? 3 : 5;
-      int rookStartCol = (endCol == 2) ? 0 : 7;
-      Piece rook = clearSquare(endRow, rookEndCol);
-
-      // place the king back
-      addPiece(king, move.getStartRow(), move.getStartCol());
-      king.indicateBackward();
-
-      // place the rook back
-      addPiece(rook, endRow, rookStartCol);
-      rook.indicateBackward();
-
-    } else if (move.isPromotion()) {
-
-      int endRow = move.getEndRow();
-      int endCol = move.getEndCol();
-
-      // delete the promoted piece
-      clearSquare(endRow, endCol);
-
-      // put pawn back on start square
-      Piece pawn = popLastPromotedPiece();
-      addPiece(pawn, move.getStartRow(), move.getStartCol());
-      pawn.indicateBackward();
-
-      // if capturing a piece, place captured piece back
-      if (move.isCapture()) {
+    
+    int moveListSize = this.moveList.size();
+    boolean canCheckEnPassent = moveListSize >= 2;
+    boolean enPassentMove = false;
+    if (canCheckEnPassent) {
+      // check en passent
+      Move moveBeforeMove = this.moveList.get(moveListSize-2);
+      if (isEnPassent(move, moveBeforeMove)) {
+        enPassentMove = true;
+        // get last piece that was captured
         Piece capturedPiece = popLastCapturedPiece();
-        addPiece(capturedPiece, endRow, endCol);
-      } 
 
-    } else {
+        int startRow = move.getStartRow();
+        int startCol = move.getStartCol();
+        int endCol = move.getEndCol();
 
-      int endRow = move.getEndRow();
-      int endCol = move.getEndCol();
-      // pick up moved piece
-      if (!containsPiece(endRow, endCol)) {
+        // get pawn that did en passent
+        Piece pawn = clearSquare(move.getEndRow(), endCol);
+        addPiece(pawn, startRow, startCol);
+        pawn.indicateBackward();
+
+        // figure out which side captured piece should be placed
+        boolean capturedRight = (endCol-startCol) > 0;
+        if (capturedRight) {
+          addPiece(capturedPiece, startRow, startCol+1);
+        } else {
+          addPiece(capturedPiece, startRow, startCol-1);
+        }
       }
-      Piece movingPiece = clearSquare(endRow, endCol);
-
-      // if move was a capture, place captured piece back
-      if (move.isCapture()) {
-        Piece clearedPiece = popLastCapturedPiece();
-        addPiece(clearedPiece, endRow, endCol);
-      }
-
-      // place moved piece back
-      addPiece(movingPiece, move.getStartRow(), move.getStartCol());
-      movingPiece.indicateBackward();
     }
 
+    if (!enPassentMove) {
+      if (move.isCastleMove()) {
+
+        // pick up the king
+        int endRow = move.getEndRow();
+        int endCol = move.getEndCol();
+        Piece king = clearSquare(endRow, endCol);
+
+        // pick up the rook
+        int rookEndCol = (endCol == 2) ? 3 : 5;
+        int rookStartCol = (endCol == 2) ? 0 : 7;
+        Piece rook = clearSquare(endRow, rookEndCol);
+
+        // place the king back
+        addPiece(king, move.getStartRow(), move.getStartCol());
+        king.indicateBackward();
+
+        // place the rook back
+        addPiece(rook, endRow, rookStartCol);
+        rook.indicateBackward();
+
+      } else if (move.isPromotion()) {
+
+        int endRow = move.getEndRow();
+        int endCol = move.getEndCol();
+
+        // delete the promoted piece
+        clearSquare(endRow, endCol);
+
+        // put pawn back on start square
+        Piece pawn = popLastPromotedPiece();
+        addPiece(pawn, move.getStartRow(), move.getStartCol());
+        pawn.indicateBackward();
+
+        // if capturing a piece, place captured piece back
+        if (move.isCapture()) {
+          Piece capturedPiece = popLastCapturedPiece();
+          addPiece(capturedPiece, endRow, endCol);
+        } 
+
+      } else {
+
+        int endRow = move.getEndRow();
+        int endCol = move.getEndCol();
+        // pick up moved piece
+        if (!containsPiece(endRow, endCol)) {
+        }
+        Piece movingPiece = clearSquare(endRow, endCol);
+
+        // if move was a capture, place captured piece back
+        if (move.isCapture()) {
+          Piece clearedPiece = popLastCapturedPiece();
+          addPiece(clearedPiece, endRow, endCol);
+        }
+
+        // place moved piece back
+        addPiece(movingPiece, move.getStartRow(), move.getStartCol());
+        movingPiece.indicateBackward();
+      }
+    }
     // remove last move from the move history
     this.moveList.remove(moveList.size()-1);
     // change the turn back
@@ -392,7 +403,7 @@ public class Board {
     //  - promotion
     // otherwise, the move is a regular type of move
 
-    if (isEnPassent(move)) {
+    if (isEnPassent(move, getLastMove())) {
       int endCol = move.getEndCol();
       int startRow = move.getStartRow();
       int startCol = move.getStartCol();
@@ -728,16 +739,16 @@ public class Board {
   }
 
   /**
-   * Checks if a given move played currently on this board
+   * Checks if a given move played
    *  is an en passent move
-   *  @param move the move to be currently played 
-   *  @return true iff this move is legal and when played will
+   *  @param move the move to be played 
+   *  @param lastMove the last move played on this board
+   *  @return true iff when moved played will
    *            result in en passent on the current board state
    */
-  private boolean isEnPassent(Move move) {
+  private boolean isEnPassent(Move move, Move lastMove) {
     // check if piece being moved is a pawn and is a capture
     if (!move.getPieceType().equals(PieceType.PAWN) || !move.isCapture()) {return false;}
-    Move lastMove = getLastMove();
     // check if any moves has been played
     if (lastMove == null) {return false;}
     // check if the last move was a pawn move

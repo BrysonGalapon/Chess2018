@@ -156,6 +156,54 @@ public class BoardTests {
   }
 
   @Test
+  public void testLegalMovesPawn2SqsOwnPiece() {
+    String boardStr = "-  -  -  -  -  k  -  -" + "\n" +
+                      "-  -  -  -  -  p  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  b  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  K  -  -";
+
+    Board board = new Board(boardStr, Color.BLACK);
+    Set<Move> legalMoves = board.legalMoves();
+    Move move1 = new Move(PieceType.PAWN, "f7", "f5", true);
+    Move move2 = new Move(PieceType.PAWN, "f7", "f5", false);
+    assertFalse("Pawn can't play 2 moves ahead if sq is occupied (capture)", legalMoves.contains(move1));
+    assertFalse("Pawn can't play 2 moves ahead if sq is occupied", legalMoves.contains(move2));
+  }
+
+  @Test
+  public void testUndoLastMoveEnPassent() {
+    String boardStr = "-  -  -  -  -  k  -  -" + "\n" +
+                      "-  -  -  -  -  p  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  P  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  K  -  -  -  -  -  -";
+
+    Board board = new Board(boardStr, Color.BLACK);
+    Move move1 = new Move(PieceType.PAWN, "f7", "f5");
+    Move move2 = new Move(PieceType.PAWN, "g5", "f6", true);
+
+    board.move(move1);
+    // save position
+    String rep = board.compressBoard();
+    // make en passent
+    board.move(move2);
+    // undo en passent
+    board.undoLastMove();
+    String rep2 = board.compressBoard();
+
+    assertEquals("UndoLastMove doesn't undo en passent", rep, rep2);
+  }
+
+
+
+  @Test
   public void testLegalMovesPawn2Sqs() {
     String boardStr = "-  -  -  -  -  k  -  -" + "\n" +
                       "-  -  -  -  -  p  -  -" + "\n" + 

@@ -18,8 +18,8 @@ public class Main {
       System.out.println("Let's play a chess game!");
       String value = "";
 
-      Engine1 player1 = new Engine1(board);
-      Engine1 player2 = new Engine1(board);
+      Engine player1 = Engine.miniMaxEngine(board);
+      Engine player2 = Engine.miniMaxEngine(board);
       
       Set<Move> legalMoves;
       while(!value.equals("end")) {
@@ -31,7 +31,10 @@ public class Main {
           throw new Error("NANI, CHECKMATE??");
         }
 
+        System.out.println("Started P1 Turn");
         player1.signalTurn();
+        System.out.println("Ended P1 Turn");
+        System.out.println(String.format("P1 played: %s", board.getLastMove()));
 
         System.out.println(board);
         System.out.println();
@@ -41,11 +44,15 @@ public class Main {
           throw new Error("NANI, CHECKMATE??");
         }
 
+        System.out.println("Started P2 Turn");
         player2.signalTurn();
+        System.out.println("Ended P2 Turn");
+        System.out.println(String.format("P2 played: %s", board.getLastMove()));
 
       }
     } catch (Exception e) {
       System.err.println("Tomato :(");
+      System.out.println(e);
     } finally {
       reader.close();
     }

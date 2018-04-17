@@ -4,21 +4,21 @@ import src.datatypes.*;
 import java.util.*;
 
 /**
- * Engine 1 - plays random moves
+ * Engine that plays random moves
  */
-public class Engine1 {
+public class RandomEngine implements Engine {
   // instance of board to make moves on
   private final Board board;
   private final Random generator = new Random();
 
-  public Engine1(Board board) {
+  /**
+   * Create a new random engine
+   */
+  public RandomEngine(Board board) {
     this.board = board;
   }
 
-  /**
-   * Signal to engine that it is its turn to move
-   *  - makes a move on the board
-   */
+  @Override
   public void signalTurn() {
     // get random legal move and play it
     Set<Move> legalMoves = board.legalMoves();
