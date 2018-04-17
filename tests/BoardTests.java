@@ -156,6 +156,74 @@ public class BoardTests {
   }
 
   @Test
+  public void testLegalMovesProtectedPiece() {
+    String boardStr = "-  -  -  -  -  k  -  -" + "\n" +
+                      "-  -  -  -  -  B  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  R  -  -";
+
+    Board board = new Board(boardStr, Color.BLACK);
+    Set<Move> legalMoves = board.legalMoves();
+    Move move = new Move(PieceType.KING, "f8", "f7", true);
+    assertFalse("King can't take protected piece", legalMoves.contains(move));
+  }
+
+  @Test
+  public void testLegalMovesProtectedPiece2() {
+    String boardStr = "-  -  -  -  -  k  -  -" + "\n" +
+                      "-  -  -  -  -  P  -  -" + "\n" + 
+                      "-  -  -  -  -  -  K  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    Board board = new Board(boardStr, Color.BLACK);
+    Set<Move> legalMoves = board.legalMoves();
+    Move move = new Move(PieceType.KING, "f8", "f7", true);
+    assertFalse("King can't take protected piece", legalMoves.contains(move));
+  }
+
+  @Test
+  public void testLegalMovesProtectedPiece3() {
+    String boardStr = "-  -  -  -  -  k  -  -" + "\n" +
+                      "-  -  -  -  R  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "Q  -  -  -  -  -  -  -" + "\n" + 
+                      "-  K  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    Board board = new Board(boardStr, Color.BLACK);
+    Set<Move> legalMoves = board.legalMoves();
+    Move move = new Move(PieceType.KING, "f8", "e7", true);
+    assertFalse("King can't take protected piece", legalMoves.contains(move));
+  }
+
+  @Test
+  public void testLegalMovesProtectedPiece4() {
+    String boardStr = "-  K  -  -  -  -  -  -" + "\n" +
+                      "-  n  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  n  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  k  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -";
+
+    Board board = new Board(boardStr, Color.WHITE);
+    Set<Move> legalMoves = board.legalMoves();
+    Move move = new Move(PieceType.KING, "b8", "b7", true);
+    assertFalse("King can't take protected piece", legalMoves.contains(move));
+  }
+
+  @Test
   public void testLegalMovesCheckmate1() {
     String boardStr = "-  -  -  -  -  k  -  -" + "\n" +
                       "-  -  -  -  -  Q  -  -" + "\n" + 

@@ -1330,7 +1330,9 @@ public class Board {
   /**
    * Get a set of threatened squares on the board for opponent
    * @return a set of all squares that are threatened on this board
-   *  - a square is threatened if (assuming it is the opponents turn), the opponent can capture a piece on that square
+   *  - a square is threatened if (assuming it is the opponents turn), the opponent can capture a piece on that square, OR
+   *    if a king captures a piece on that square, it will be
+   *      in check
    */
   private Set<Tuple<Integer, Integer>> threatenedSquares() {
     // initialize set
