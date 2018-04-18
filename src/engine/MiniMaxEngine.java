@@ -27,11 +27,11 @@ public class MiniMaxEngine implements Engine {
   //  with depth: depth-1. 
   //  - value corresponds to the heuristic at the end of the line
   //  - if there are no legal moves, return (null,1000)
-  private Tuple<Move, Integer> min(Board board, int depth) {
+  private Tuple<Move, Double> min(Board board, int depth) {
     Move bestMove = null;
-    int bestMoveValue = 1000;
+    double bestMoveValue = 1000;
     Set<Move> legalMoves = board.legalMoves();
-    int value;
+    double value;
     // base case 
     if (depth == 1) {
       for (Move move : legalMoves) {
@@ -68,7 +68,7 @@ public class MiniMaxEngine implements Engine {
       // make the move
       board.move(move);
       // get best response 
-      Tuple<Move, Integer> bestResponse = max(board, depth-1);
+      Tuple<Move, Double> bestResponse = max(board, depth-1);
       value = bestResponse.y();
       // undo the move
       board.undoLastMove();
@@ -96,11 +96,11 @@ public class MiniMaxEngine implements Engine {
   //  with depth: depth-1. 
   //  - value corresponds to the heuristic at the end of the line
   //  - if there are no legal moves, return (null,-1000)
-  private Tuple<Move, Integer> max(Board board, int depth) {
+  private Tuple<Move, Double> max(Board board, int depth) {
     Move bestMove = null;
-    int bestMoveValue = -1000;
+    double bestMoveValue = -1000;
     Set<Move> legalMoves = board.legalMoves();
-    int value;
+    double value;
     // base case 
     if (depth == 1) {
       for (Move move : legalMoves) {
@@ -137,7 +137,7 @@ public class MiniMaxEngine implements Engine {
       // make the move
       board.move(move);
       // get best response 
-      Tuple<Move, Integer> bestResponse = min(board, depth-1);
+      Tuple<Move, Double> bestResponse = min(board, depth-1);
       value = bestResponse.y();
       // undo the move
       board.undoLastMove();
@@ -159,9 +159,10 @@ public class MiniMaxEngine implements Engine {
     return new Tuple<>(bestMove, bestMoveValue);
   }
 
-  private int heuristic(Board board) {
-    int h = 0;
-    int val;
+  private double heuristic(Board board) {
+    int numMoves = board.getNumMoves();
+    double h = 0;
+    double val = 0;
     for (int row=0; row < 8; row++) {
       for (int col=0; col < 8; col++) {
         // skip square if no piece there
@@ -170,23 +171,30 @@ public class MiniMaxEngine implements Engine {
         Piece piece = board.getPiece(row,col);
         switch(piece.getType()) {
           case KING:
-            // ignore the king
             val = 0;
             break;
           case QUEEN:
             val = 9;
+            if (piece.getColor().equals(side))
+              val += (piece.numTimesMoved()==0) ? clamp(-1*numMoves/20.0,-0.95,0) : 0;
             break;
           case ROOK:
             val = 5;
             break;
           case BISHOP:
             val = 3;
+            if (piece.getColor().equals(side))
+              val += (piece.numTimesMoved()==0) ? clamp(-1*numMoves/4.0,-0.95,0) : 0;
             break;
           case PAWN:
             val = 1;
             break;
           case KNIGHT:
             val = 3;
+            if (piece.getColor().equals(side))
+              val += (piece.numTimesMoved()==0) ? clamp(-1*numMoves/7.0,-0.95,0) : 0;
+            if (piece.getColor().equals(side))
+              val += (piece.numTimesMoved()<2) ? -0.1*(Math.abs(col-3.5)+0.5)+0.4 : 0;
             break;
           default:
             throw new Error("Unexpected Piece Type");
@@ -202,20 +210,44 @@ public class MiniMaxEngine implements Engine {
       }
     }
 
+    if (numMoves >= 6) {
+      val += (board.whiteCastled()) ? 1 : clamp(-1*(numMoves-6)/3.0,-1.6,0);
+      val -= (board.blackCastled()) ? 1 : clamp(-1*(numMoves-6)/3.0,-1.6,0);
+    }
+    h = h+val;
+
+    Color side = board.getTurn();
+    if (side.equals(Color.WHITE)) {
+      if (board.checkmate()) {
+        h = h + (-2000);
+      }
+    }  else {
+      if (board.checkmate()) {
+        h = h + (2000);
+      }
+    }
+
     return h;
+  }
+
+  /**
+   * Clamp a value between a minimum and maximum
+   */
+  private double clamp(double value, double min, double max) {
+    return Math.min(Math.max(value, min), max);
   }
 
   @Override
   public void signalTurn() {
     // if white, max the heuristic
     if (side.equals(Color.WHITE)) {
-      Tuple<Move, Integer> response = max(board, MAX_RECURSION_DEPTH);
+      Tuple<Move, Double> response = max(board, MAX_RECURSION_DEPTH);
       Move move = response.x();
       if (move == null) {throw new Error("CRYYY");}
       board.move(move);
     } else {
     // if black, min the heuristic
-      Tuple<Move, Integer> response = min(board, MAX_RECURSION_DEPTH);
+      Tuple<Move, Double> response = min(board, MAX_RECURSION_DEPTH);
       Move move = response.x();
       if (move == null) {throw new Error("CRYYY");}
       board.move(move);

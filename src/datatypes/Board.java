@@ -1945,6 +1945,43 @@ public class Board {
   }
 
   /**
+   * Get the total number of moves played on this board
+   * @return the number of moves played on this board
+   */
+  public int getNumMoves() {
+    return this.moveList.size();
+  }
+
+  /**
+   * Whether or not white performed a castle move
+   * @return if white ever made a castling move
+   */
+  public boolean whiteCastled() {
+    for (Move move : this.moveList) {
+      if (move.isCastleMove() && move.getEndRow() == 0) {return true;}
+    }
+    return false;
+  }
+
+  /**
+   * Whether or not black performed a castle move
+   * @return if black ever made a castling move
+   */
+  public boolean blackCastled() {
+    for (Move move : this.moveList) {
+      if (move.isCastleMove() && move.getEndRow() == 7) {return true;}
+    }
+    return false;
+  }
+
+  /**
+   * Check if this position is checkmate
+   */
+  public boolean checkmate() {
+    return (inCheck() && legalMoves().size()==0);
+  }
+
+  /**
    * Get the opposite color 
    *  - BLACK to WHITE
    *  - WHITE to BLACK
