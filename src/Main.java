@@ -19,7 +19,7 @@ public class Main {
       String value = "";
 
       Engine player1 = Engine.miniMaxEngine(board);
-      Engine player2 = Engine.miniMaxEngine(board);
+      Engine player2 = Engine.randomEngine(board);
       
       Set<Move> legalMoves;
       while(!value.equals("end")) {

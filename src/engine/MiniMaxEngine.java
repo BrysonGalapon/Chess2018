@@ -35,12 +35,22 @@ public class MiniMaxEngine implements Engine {
     // base case 
     if (depth == 1) {
       for (Move move : legalMoves) {
+        String first = board.toString();
         // make the move
         board.move(move);
         // evaluate the position
         value = heuristic(board);
         // undo the move
         board.undoLastMove();
+        String last = board.toString();
+        if (!first.equals(last)) {
+          System.out.println(move);
+          System.out.println(first);
+          System.out.println();
+          System.out.println(last);
+          System.out.println();
+          throw new Error("FUCK_1");
+        }
 
         // update best move combination
         if (value <= bestMoveValue) {
@@ -54,6 +64,7 @@ public class MiniMaxEngine implements Engine {
 
     // recursive case: depth > 1
     for (Move move : legalMoves) {
+      String first = board.toString();
       // make the move
       board.move(move);
       // get best response 
@@ -61,6 +72,15 @@ public class MiniMaxEngine implements Engine {
       value = bestResponse.y();
       // undo the move
       board.undoLastMove();
+      String last = board.toString();
+      if (!first.equals(last)) {
+        System.out.println(move);
+        System.out.println(first);
+        System.out.println();
+        System.out.println(last);
+        System.out.println();
+        throw new Error("FUCK_2");
+      }
 
       if (value <= bestMoveValue) {
         bestMove = move;
@@ -81,7 +101,6 @@ public class MiniMaxEngine implements Engine {
     int bestMoveValue = -1000;
     Set<Move> legalMoves = board.legalMoves();
     int value;
-    String ogPos = board.toString();
     // base case 
     if (depth == 1) {
       for (Move move : legalMoves) {
@@ -93,18 +112,14 @@ public class MiniMaxEngine implements Engine {
         // undo the move
         board.undoLastMove();
         String last = board.toString();
+
         if (!first.equals(last)) {
-          System.out.println("OG POS");
-          System.out.println(ogPos);
-          System.out.println();
-          System.out.println("Move");
           System.out.println(move);
-          System.out.println();
-          System.out.println("First");
           System.out.println(first);
           System.out.println();
-          System.out.println("Last");
           System.out.println(last);
+          System.out.println();
+          throw new Error("FUCK_3");
         }
 
         // update best move combination
@@ -118,6 +133,7 @@ public class MiniMaxEngine implements Engine {
 
     // recursive case: depth > 1
     for (Move move : legalMoves) {
+      String first = board.toString();
       // make the move
       board.move(move);
       // get best response 
@@ -125,6 +141,15 @@ public class MiniMaxEngine implements Engine {
       value = bestResponse.y();
       // undo the move
       board.undoLastMove();
+      String last = board.toString();
+      if (!first.equals(last)) {
+        System.out.println(move);
+        System.out.println(first);
+        System.out.println();
+        System.out.println(last);
+        System.out.println();
+        throw new Error("FUCK_4");
+      }
 
       if (value >= bestMoveValue) {
         bestMove = move;

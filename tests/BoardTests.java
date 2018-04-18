@@ -175,6 +175,35 @@ public class BoardTests {
   }
 
   @Test
+  public void testUndoLastMovePawnCapture() {
+    String boardStr = "-  -  -  -  -  k  -  -" + "\n" +
+                      "-  -  -  -  -  -  p  p" + "\n" + 
+                      "-  -  -  -  -  p  -  -" + "\n" + 
+                      "-  -  -  -  -  -  P  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  -  -  -  -  -  -  -" + "\n" + 
+                      "-  K  -  -  -  -  -  -";
+
+    Board board = new Board(boardStr, Color.BLACK);
+    Move move1 = new Move(PieceType.PAWN, "h7", "h5");
+    Move move2 = new Move(PieceType.PAWN, "g5", "f6", true);
+
+    System.out.println("#############################################");
+    board.move(move1);
+    // save position
+    String rep = board.compressBoard();
+    // make en passent
+    board.move(move2);
+    // undo en passent
+    board.undoLastMove();
+    String rep2 = board.compressBoard();
+
+    System.out.println("#############################################");
+    assertEquals("UndoLastMove doesn't undo pawn capture", rep, rep2);
+  }
+
+  @Test
   public void testUndoLastMoveEnPassent() {
     String boardStr = "-  -  -  -  -  k  -  -" + "\n" +
                       "-  -  -  -  -  p  -  -" + "\n" + 

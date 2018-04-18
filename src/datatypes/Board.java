@@ -336,7 +336,6 @@ public class Board {
         } 
 
       } else {
-
         int endRow = move.getEndRow();
         int endCol = move.getEndCol();
         // pick up moved piece
@@ -355,6 +354,7 @@ public class Board {
         movingPiece.indicateBackward();
       }
     }
+
     // remove last move from the move history
     this.moveList.remove(moveList.size()-1);
     // change the turn back
@@ -759,7 +759,7 @@ public class Board {
     if (Math.abs(lastMoveEndRow-lastMoveStartRow) != 2) {return false;}
     // check if last move's pawn move landed adjacent to starting
     //  square of move
-    if ((lastMoveEndRow != move.getStartRow()) || Math.abs(lastMove.getEndCol()-move.getStartCol()) != 1) {return false;}
+    if ((lastMoveEndRow != move.getStartRow()) || move.getEndCol() != lastMove.getEndCol()) {return false;}
 
     return true;
   }
