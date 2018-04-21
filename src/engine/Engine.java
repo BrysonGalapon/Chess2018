@@ -6,15 +6,15 @@ public interface Engine {
   /**
    * Get an engine that will play random legal moves
    */
-  public static Engine randomEngine(Board board) {
-    return new RandomEngine(board);
+  public static Engine randomEngine(Board board, Color color) {
+    return new RandomEngine(board, color);
   }
 
   /**
    * Get an engine that calculates moves using minimax algorithm
    */
-  public static Engine miniMaxEngine(Board board) {
-    return new MiniMaxEngine(board);
+  public static Engine miniMaxEngine(Board board, Color color) {
+    return new MiniMaxEngine2(board, color);
   }
 
   /**

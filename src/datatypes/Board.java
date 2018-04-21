@@ -362,34 +362,79 @@ public class Board {
   }
 
   /**
-   * Make a move on this board - does nothing if move is illegal
+   * Make a move on this board
    *  - if move is legal, toggles player turn
    * @param move move to be played on this board
+   * @return true iff move was a legal move, else false
    */
-  public void move(Move move) {
+  public boolean move(Move move) {
     if (!legalMoves().contains(move)) {
       // don't do anything if move isn't legal
       // NOTE: might choose to remove this check when
       //        code that is using board class is verified
       //        to not give illegal moves - this will
       //        improve performance
-      return;
+      return false;
     }
 
     // pass on move after verifying that move is legal
     moveNoCheck(move);
+    return true;
   }
 
-  ///**
-  // * Make a move on this board - does nothing if move is illegal
-  // *  - if move is legal, toggles player turn
-  // * @param startSq start square for move
-  // * @param endSq end square for move
-  // */
-  //public void move(String startSq, String endSq) {
-  //  // TODO
-  //  Move move = new Move(startSq, endSq);
-  //}
+  /**
+   * Make a move on this board - does nothing if move is illegal
+   *  - if move is legal, toggles player turn
+   * @param startSq start square for move
+   * @param endSq end square for move
+   * @return true iff move was a legal move, else false
+   */
+  public boolean move(String startSq, String endSq) {
+    Set<Move> legalMoves = legalMoves();
+    for (Move move : legalMoves) {
+      // ignore move if end and start squares are different
+      if (!move.getStartSquare().equals(startSq) || !move.getEndSquare().equals(endSq)) {continue;}
+
+      return this.move(move);
+    }
+
+    // couldn't find move in set of legal moves
+    return false;
+  }
+
+  /**
+   * Make a move on this board - does nothing if move is illegal
+   *  - if move is legal, toggles player turn
+   * @param startSq start square for move
+   * @param endSq end square for move
+   * @return true iff move was a legal move, else false
+   */
+  public boolean move(Tuple<Integer, Integer>  startSq, Tuple<Integer, Integer> endSq) {
+    return this.move(startSq.x(), startSq.y(), endSq.x(), endSq.y());
+  }
+
+  /**
+   * Make a move on this board - does nothing if move is illegal
+   *  - if move is legal, toggles player turn
+   * @param startRow 0-indexed row of start square
+   * @param startCol 0-indexed column of start square
+   * @param endRow 0-indexed row of end square
+   * @param endCol 0-indexed column of end square
+   * @return true iff move was a legal move, else false
+   */
+  public boolean move(int startRow, int startCol, int endRow, int endCol) {
+    Set<Move> legalMoves = legalMoves();
+    for (Move move : legalMoves) {
+      // ignore move if end and start squares are different
+      if (move.getStartRow() != startRow || move.getStartCol() != startCol) {continue;}
+      if (move.getEndRow() != endRow || move.getEndCol() != endCol) {continue;}
+
+      return this.move(move);
+    }
+
+    // couldn't find move in legal moves
+    return false;
+  }
 
   /**
    * Make a move on this board, without checking if move is illegal
@@ -497,16 +542,49 @@ public class Board {
   }
 
   /**
+   * Get the total number of white pieces on this board
+   */
+  public int numWhitePieces() {
+    int numWhites = 0;
+    for (int row=0; row<NUM_ROWS; row++) {
+      for (int col=0; col<NUM_COLS; col++) {
+        if (!containsPiece(row,col)) {continue;}
+        Piece piece = getPiece(row,col);
+        if (piece.getColor().equals(Color.WHITE)) {numWhites++;}
+      }
+    }
+
+    return numWhites;
+  }
+
+  /**
+   * Get the total number of black pieces on this board
+   */
+  public int numBlackPieces() {
+    int numBlacks = 0;
+    for (int row=0; row<NUM_ROWS; row++) {
+      for (int col=0; col<NUM_COLS; col++) {
+        if (!containsPiece(row,col)) {continue;}
+        Piece piece = getPiece(row,col);
+        if (piece.getColor().equals(Color.BLACK)) {numBlacks++;}
+      }
+    }
+
+    return numBlacks;
+  }
+
+  /**
    * Obtain the set of legal moves for this position
    * @return the set of legal moves for the current side
    *          to move
    */
   public Set<Move> legalMoves() {
-    String compressedBoard = this.compressBoard();
-    if (this.legalMoveHistory.containsKey(compressedBoard)) {
-      // return unmodifiable set of legal moves
-      return this.legalMoveHistory.get(compressedBoard);
-    }
+    String compressedBoard = "";
+    //String compressedBoard = this.compressBoard();
+    //if (this.legalMoveHistory.containsKey(compressedBoard)) {
+    //  // return unmodifiable set of legal moves
+    //  return this.legalMoveHistory.get(compressedBoard);
+    //}
 
     boolean kingInCheck = inCheck();
 
@@ -557,7 +635,7 @@ public class Board {
     }
 
     // add unmodifiable version of legal moves to hashmap for future calls
-    this.legalMoveHistory.put(compressedBoard, Collections.unmodifiableSet(legalMoveSet));
+    //this.legalMoveHistory.put(compressedBoard, Collections.unmodifiableSet(legalMoveSet));
     return legalMoveSet;
   }
 

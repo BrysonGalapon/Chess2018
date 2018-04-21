@@ -9,13 +9,15 @@ import java.util.*;
 public class RandomEngine implements Engine {
   // instance of board to make moves on
   private final Board board;
+  private final Color side;
   private final Random generator = new Random();
 
   /**
    * Create a new random engine
    */
-  public RandomEngine(Board board) {
+  public RandomEngine(Board board, Color color) {
     this.board = board;
+    this.side = color;
   }
 
   @Override

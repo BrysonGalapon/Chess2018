@@ -10,77 +10,60 @@ import src.mouse_control.*;
 
 public class Main {
   public static void main(String[] args) {
-
-    //Scanner reader = new Scanner(System.in);
-    //try {
-    //  Board board = new Board();
-    //  System.out.println("Let's play a chess game!");
-    //  String value = "";
-
-    //  Engine player1 = Engine.miniMaxEngine(board);
-    //  Engine player2 = Engine.randomEngine(board);
-    //  
-    //  Set<Move> legalMoves;
-    //  while(!value.equals("end")) {
-    //    System.out.println(board);
-    //    System.out.println();
-    //    value = reader.nextLine();
-    //    legalMoves = board.legalMoves();
-    //    if (legalMoves.size() == 0) {
-    //      throw new Error("NANI, CHECKMATE??");
-    //    }
-
-    //    System.out.println("Started P1 Turn");
-    //    player1.signalTurn();
-    //    System.out.println("Ended P1 Turn");
-    //    System.out.println(String.format("P1 played: %s", board.getLastMove()));
-
-    //    System.out.println(board);
-    //    System.out.println();
-    //    value = reader.nextLine();
-    //    legalMoves = board.legalMoves();
-    //    if (legalMoves.size() == 0) {
-    //      throw new Error("NANI, CHECKMATE??");
-    //    }
-
-    //    System.out.println("Started P2 Turn");
-    //    player2.signalTurn();
-    //    System.out.println("Ended P2 Turn");
-    //    System.out.println(String.format("P2 played: %s", board.getLastMove()));
-
-    //  }
-    //} catch (Exception e) {
-    //  System.err.println("Tomato :(");
-    //  System.out.println(e);
-    //} finally {
-    //  reader.close();
-    //}
-
     try {
+      Board board = new Board();
+      Scanner reader = new Scanner(System.in);
       Mouse_Control mouse = new Mouse_Control();
+      for (int i=0;i<200000;i++) {
+        if (mouse.lookForMove(board)) {
+          System.out.println("Success!");
+        } else {
+          System.out.println("Fail :(");
+        }
+        System.out.println(board);
+        String iloveyou = reader.nextLine();
+      }
+
+      double x = 1/0;
+
+      //Mouse_Control mouse = new Mouse_Control();
       Thread.sleep(3000);
 
-      Board board = new Board();
+      //Board board = new Board();
 
-      Engine player1 = Engine.miniMaxEngine(board);
-      Engine player2 = Engine.randomEngine(board);
+      //Engine player1 = Engine.miniMaxEngine(board, Color.WHITE);
+      //Engine player2 = Engine.miniMaxEngine(board, Color.BLACK);
+      MiniMaxEngine2 player1 = (MiniMaxEngine2) Engine.miniMaxEngine(board, Color.WHITE);
+      MiniMaxEngine2 player2 = (MiniMaxEngine2) Engine.miniMaxEngine(board, Color.BLACK);
+      //Engine player2 = Engine.randomEngine(board, Color.BLACK);
 
       Move move;
-      while (board.legalMoves().size() != 0) {
+      while (!board.checkmate()) {
         Thread.sleep(500);
         player1.signalTurn();
         move = board.getLastMove();
+        
         mouse.makeMove(move);
+        System.out.println(String.format("Eval: %s", player1.heuristic(board)));
+        //System.out.println(String.format("Eval: %s", player2.heuristic(board)));
+        if (move.isPromotion()) {Thread.sleep(2000);}
 
-        if (board.legalMoves().size() == 0) {break;}
+        if (board.checkmate()) {break;}
 
         Thread.sleep(500);
         player2.signalTurn();
         move = board.getLastMove();
         mouse.makeMove(move);
+        System.out.println(String.format("Eval: %s", player1.heuristic(board)));
+        //System.out.println(String.format("Eval: %s", player2.heuristic(board)));
+        if (move.isPromotion()) {Thread.sleep(2000);}
       }
 
-      System.out.println("CHECKMATUUU?");
+      if (board.getTurn().equals(Color.WHITE)) {
+        System.out.println("Checkmate! Black wins!");
+      } else {
+        System.out.println("Checkmate! White wins!");
+      }
 
     } catch (InterruptedException e1) {
       throw new Error("Thread was interrupted");

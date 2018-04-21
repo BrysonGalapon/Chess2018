@@ -231,6 +231,22 @@ public class Move {
   }
 
   /**
+   * Obtain the string representation of the start square of this move
+   * @return the string representation of the start square of this move
+   */
+  public String getStartSquare() {
+    return chessCoord(getStartRow(), getStartCol());
+  }
+
+  /**
+   * Obtain the string representation of the start square of this move
+   * @return the string representation of the start square of this move
+   */
+  public String getEndSquare() {
+    return chessCoord(getEndRow(), getEndCol());
+  }
+
+  /**
    * Obtain the 0-indexed column at which the moved piece started at
    * @return the 0-indexed column at which the piece starts at
    */

@@ -189,7 +189,6 @@ public class BoardTests {
     Move move1 = new Move(PieceType.PAWN, "h7", "h5");
     Move move2 = new Move(PieceType.PAWN, "g5", "f6", true);
 
-    System.out.println("#############################################");
     board.move(move1);
     // save position
     String rep = board.compressBoard();
@@ -199,7 +198,6 @@ public class BoardTests {
     board.undoLastMove();
     String rep2 = board.compressBoard();
 
-    System.out.println("#############################################");
     assertEquals("UndoLastMove doesn't undo pawn capture", rep, rep2);
   }
 
@@ -2031,75 +2029,16 @@ public class BoardTests {
   //              PERFORMANCE TESTS                 //
   ////////////////////////////////////////////////////
 
-  @Ignore("Performance test")
   @Test
   public void testLegalMovesTiming90Percent() {
     Board board = new Board();
+    int numCounts = 100;
 
-    long start_first_call = System.currentTimeMillis();
-    board.legalMoves();
-    long end_first_call = System.currentTimeMillis();
-
-    long start_second_call = System.currentTimeMillis();
-    board.legalMoves();
-    long end_second_call = System.currentTimeMillis();
-
-    long first_call_length = end_first_call-start_first_call;
-    long second_call_length = end_second_call-start_second_call;
-    assertTrue(String.format("second call (%d ms) isn't faster than first call (%d ms) by 90 percent", second_call_length, first_call_length), second_call_length < 0.90*first_call_length);
-  }
-
-  @Ignore("Performance test")
-  @Test
-  public void testLegalMovesTiming50Percent() {
-    Board board = new Board();
-
-    long start_first_call = System.currentTimeMillis();
-    board.legalMoves();
-    long end_first_call = System.currentTimeMillis();
-
-    long start_second_call = System.currentTimeMillis();
-    board.legalMoves();
-    long end_second_call = System.currentTimeMillis();
-
-    long first_call_length = end_first_call-start_first_call;
-    long second_call_length = end_second_call-start_second_call;
-    assertTrue(String.format("second call (%d ms) isn't faster than first call (%d ms) by 50 percent", second_call_length, first_call_length), second_call_length < 0.50*first_call_length);
-  }
-
-  @Ignore("Performance test")
-  @Test
-  public void testLegalMovesTiming10Percent() {
-    Board board = new Board();
-
-    long start_first_call = System.currentTimeMillis();
-    board.legalMoves();
-    long end_first_call = System.currentTimeMillis();
-
-    long start_second_call = System.currentTimeMillis();
-    board.legalMoves();
-    long end_second_call = System.currentTimeMillis();
-
-    long first_call_length = end_first_call-start_first_call;
-    long second_call_length = end_second_call-start_second_call;
-    assertTrue(String.format("second call (%d ms) isn't faster than first call (%d ms) by 10 percent", second_call_length, first_call_length), second_call_length < 0.10*first_call_length);
-  }
-
-  @Ignore("Performance test")
-  @Test
-  public void testLegalMovesTiming05Percent() {
-    Board board = new Board();
-
-    long start_first_call = System.currentTimeMillis();
-    board.legalMoves();
-    long end_first_call = System.currentTimeMillis();
-
-    long start_second_call = System.currentTimeMillis();
-    board.legalMoves();
-    long end_second_call = System.currentTimeMillis();
-
-    long first_call_length = end_first_call-start_first_call;
-    long second_call_length = end_second_call-start_second_call;
-    assertTrue(String.format("second call (%d ms) isn't faster than first call (%d ms) by 5 percent", second_call_length, first_call_length), second_call_length < 0.05*first_call_length);
+    long start = System.currentTimeMillis();
+    for (int count=0; count<numCounts; count++) {
+      board.legalMoves();
+    }
+    long end = System.currentTimeMillis();
+    System.out.println(1.0*(end-start)/numCounts);
   }
 }

@@ -11,14 +11,20 @@ public class MiniMaxEngine implements Engine {
   private final Board board;
   private final Color side;
 
-  private final int MAX_RECURSION_DEPTH=3;
+  private final int NORMAL_RECURSION_DEPTH=3;
+  private final int MATE_RECURSION_DEPTH=5;
+
+  private final Map<String,Tuple<Move,Double>> min_memo;
+  private final Map<String,Tuple<Move,Double>> max_memo;
 
   /**
    * Create a new engine that uses minimax
    */
-  public MiniMaxEngine(Board board) {
+  public MiniMaxEngine(Board board, Color color) {
     this.board = board;
-    this.side = board.getTurn();
+    this.side = color;
+    this.max_memo = new HashMap<String,Tuple<Move,Double>>();
+    this.min_memo = new HashMap<String,Tuple<Move,Double>>();
   }
 
   // returns the (move,value) pair that minimizes the heuristic
@@ -28,6 +34,12 @@ public class MiniMaxEngine implements Engine {
   //  - value corresponds to the heuristic at the end of the line
   //  - if there are no legal moves, return (null,1000)
   private Tuple<Move, Double> min(Board board, int depth) {
+    String compressedString = board.compressBoard();
+    compressedString += depth;
+    if (min_memo.containsKey(compressedString)) {
+      return min_memo.get(compressedString);
+    }
+
     Move bestMove = null;
     double bestMoveValue = 1000;
     Set<Move> legalMoves = board.legalMoves();
@@ -35,22 +47,12 @@ public class MiniMaxEngine implements Engine {
     // base case 
     if (depth == 1) {
       for (Move move : legalMoves) {
-        String first = board.toString();
         // make the move
         board.move(move);
         // evaluate the position
         value = heuristic(board);
         // undo the move
         board.undoLastMove();
-        String last = board.toString();
-        if (!first.equals(last)) {
-          System.out.println(move);
-          System.out.println(first);
-          System.out.println();
-          System.out.println(last);
-          System.out.println();
-          throw new Error("FUCK_1");
-        }
 
         // update best move combination
         if (value <= bestMoveValue) {
@@ -59,35 +61,36 @@ public class MiniMaxEngine implements Engine {
         }
 
       }
-      return new Tuple<>(bestMove, bestMoveValue);
+      Tuple<Move, Double> bestResponse = new Tuple<>(bestMove, bestMoveValue);
+      min_memo.put(compressedString, bestResponse);
+      return bestResponse;
     }
 
     // recursive case: depth > 1
     for (Move move : legalMoves) {
-      String first = board.toString();
       // make the move
       board.move(move);
+      // if found a checkmate, immediately return it
+      if (board.checkmate()) {
+        board.undoLastMove();
+        Tuple<Move, Double> bestResponse = new Tuple<>(move, -1000.0);
+        min_memo.put(compressedString, bestResponse);
+        return bestResponse;
+      }
       // get best response 
       Tuple<Move, Double> bestResponse = max(board, depth-1);
       value = bestResponse.y();
       // undo the move
       board.undoLastMove();
-      String last = board.toString();
-      if (!first.equals(last)) {
-        System.out.println(move);
-        System.out.println(first);
-        System.out.println();
-        System.out.println(last);
-        System.out.println();
-        throw new Error("FUCK_2");
-      }
 
       if (value <= bestMoveValue) {
         bestMove = move;
         bestMoveValue = value;
       }
     }
-    return new Tuple<>(bestMove, bestMoveValue);
+    Tuple<Move,Double> bestResponse = new Tuple<>(bestMove, bestMoveValue);
+    min_memo.put(compressedString, bestResponse);
+    return bestResponse;
   }
 
   // returns the (move,value) pair that maximizes the heuristic
@@ -97,6 +100,12 @@ public class MiniMaxEngine implements Engine {
   //  - value corresponds to the heuristic at the end of the line
   //  - if there are no legal moves, return (null,-1000)
   private Tuple<Move, Double> max(Board board, int depth) {
+    String compressedString = board.compressBoard();
+    compressedString += depth;
+    if (max_memo.containsKey(compressedString)) {
+      return max_memo.get(compressedString);
+    }
+
     Move bestMove = null;
     double bestMoveValue = -1000;
     Set<Move> legalMoves = board.legalMoves();
@@ -104,23 +113,12 @@ public class MiniMaxEngine implements Engine {
     // base case 
     if (depth == 1) {
       for (Move move : legalMoves) {
-        String first = board.toString();
         // make the move
         board.move(move);
         // evaluate the position
         value = heuristic(board);
         // undo the move
         board.undoLastMove();
-        String last = board.toString();
-
-        if (!first.equals(last)) {
-          System.out.println(move);
-          System.out.println(first);
-          System.out.println();
-          System.out.println(last);
-          System.out.println();
-          throw new Error("FUCK_3");
-        }
 
         // update best move combination
         if (value >= bestMoveValue) {
@@ -128,38 +126,39 @@ public class MiniMaxEngine implements Engine {
           bestMoveValue = value;
         }
       }
-      return new Tuple<>(bestMove, bestMoveValue);
+      Tuple<Move, Double> bestResponse = new Tuple<>(bestMove, bestMoveValue);
+      max_memo.put(compressedString, bestResponse);
+      return bestResponse;
     }
 
     // recursive case: depth > 1
     for (Move move : legalMoves) {
-      String first = board.toString();
       // make the move
       board.move(move);
+      // if found a checkmate, immediately return it
+      if (board.checkmate()) {
+        board.undoLastMove();
+        Tuple<Move, Double> bestResponse = new Tuple<>(move, 1000.0);
+        max_memo.put(compressedString, bestResponse);
+        return bestResponse;
+      }
       // get best response 
       Tuple<Move, Double> bestResponse = min(board, depth-1);
       value = bestResponse.y();
       // undo the move
       board.undoLastMove();
-      String last = board.toString();
-      if (!first.equals(last)) {
-        System.out.println(move);
-        System.out.println(first);
-        System.out.println();
-        System.out.println(last);
-        System.out.println();
-        throw new Error("FUCK_4");
-      }
 
       if (value >= bestMoveValue) {
         bestMove = move;
         bestMoveValue = value;
       }
     }
-    return new Tuple<>(bestMove, bestMoveValue);
+    Tuple<Move,Double> bestResponse = new Tuple<>(bestMove, bestMoveValue);
+    max_memo.put(compressedString, bestResponse);
+    return bestResponse;
   }
 
-  private double heuristic(Board board) {
+  public double heuristic(Board board) {
     int numMoves = board.getNumMoves();
     double h = 0;
     double val = 0;
@@ -169,32 +168,58 @@ public class MiniMaxEngine implements Engine {
         if (!board.containsPiece(row,col)) {continue;}
         // get the piece
         Piece piece = board.getPiece(row,col);
+        double colCont;
+        double rowCont;
         switch(piece.getType()) {
           case KING:
             val = 0;
             break;
           case QUEEN:
             val = 9;
-            if (piece.getColor().equals(side))
-              val += (piece.numTimesMoved()==0) ? clamp(-1*numMoves/20.0,-0.95,0) : 0;
+            val += (piece.numTimesMoved()==0) ? clamp(-1*numMoves/30.0,-0.3,0) : 0;
+            // prioritize center columns
+            colCont = -0.1*(Math.abs(col-3.5)+0.5)+0.4;
+            // prioritize center rows
+            rowCont = -0.1*(Math.abs(row-3.5)+0.5)+0.4;
+            val += colCont*rowCont;
             break;
           case ROOK:
             val = 5;
             break;
           case BISHOP:
             val = 3;
-            if (piece.getColor().equals(side))
-              val += (piece.numTimesMoved()==0) ? clamp(-1*numMoves/4.0,-0.95,0) : 0;
+            val += (piece.numTimesMoved()==0) ? clamp(-1*numMoves/4.0,-0.95,0) : 0;
+            // prioritize center columns
+            colCont = -0.1*(Math.abs(col-3.5)+0.5)+0.4;
+            // prioritize center rows
+            rowCont = -0.1*(Math.abs(row-3.5)+0.5)+0.4;
+            val += colCont*rowCont;
             break;
           case PAWN:
             val = 1;
+            if (piece.getColor().equals(Color.WHITE)) {
+              // prioritize center columns
+              colCont = -0.1*(Math.abs(col-3.5)+0.5)+0.4;
+              // reward pushing the pawn
+              rowCont = -0.1*(7-row)+0.6;
+              val += colCont*rowCont;
+            } else {
+              // prioritize center columns
+              colCont = -0.1*(Math.abs(col-3.5)+0.5)+0.4;
+              // reward pushing the pawn
+              rowCont = -0.1*(row)+0.6;
+              val += colCont*rowCont;
+            }
             break;
           case KNIGHT:
             val = 3;
-            if (piece.getColor().equals(side))
-              val += (piece.numTimesMoved()==0) ? clamp(-1*numMoves/7.0,-0.95,0) : 0;
-            if (piece.getColor().equals(side))
-              val += (piece.numTimesMoved()<2) ? -0.1*(Math.abs(col-3.5)+0.5)+0.4 : 0;
+            val += (piece.numTimesMoved()==0) ? clamp(-1*numMoves/7.0,-0.95,0) : 0;
+            
+            // prioritize center columns
+            colCont = -0.1*(Math.abs(col-3.5)+0.5)+0.4;
+            // prioritize center rows
+            rowCont = -0.1*(Math.abs(row-3.5)+0.5)+0.4;
+            val += colCont*rowCont;
             break;
           default:
             throw new Error("Unexpected Piece Type");
@@ -211,13 +236,11 @@ public class MiniMaxEngine implements Engine {
     }
 
     if (numMoves >= 6) {
-      val += (board.whiteCastled()) ? 1 : clamp(-1*(numMoves-6)/3.0,-1.6,0);
-      val -= (board.blackCastled()) ? 1 : clamp(-1*(numMoves-6)/3.0,-1.6,0);
+      h += (board.whiteCastled()) ? 1 : clamp(-1*(numMoves-6)/3.0,-1.6,0);
+      h -= (board.blackCastled()) ? 1 : clamp(-1*(numMoves-6)/3.0,-1.6,0);
     }
-    h = h+val;
 
-    Color side = board.getTurn();
-    if (side.equals(Color.WHITE)) {
+    if (board.getTurn().equals(Color.WHITE)) {
       if (board.checkmate()) {
         h = h + (-2000);
       }
@@ -241,15 +264,29 @@ public class MiniMaxEngine implements Engine {
   public void signalTurn() {
     // if white, max the heuristic
     if (side.equals(Color.WHITE)) {
-      Tuple<Move, Double> response = max(board, MAX_RECURSION_DEPTH);
+      int depth;
+      if (board.numBlackPieces() == 1) {
+        // try to find a checkmate
+        depth = MATE_RECURSION_DEPTH;
+      } else {
+        // normal
+        depth = NORMAL_RECURSION_DEPTH;
+      }
+      Tuple<Move, Double> response = max(board, depth);
       Move move = response.x();
-      if (move == null) {throw new Error("CRYYY");}
       board.move(move);
     } else {
-    // if black, min the heuristic
-      Tuple<Move, Double> response = min(board, MAX_RECURSION_DEPTH);
+      int depth;
+      // if black, min the heuristic
+      if (board.numWhitePieces() == 1) {
+        // try to find a checkmate
+        depth = MATE_RECURSION_DEPTH;
+      } else {
+        // normal
+        depth = NORMAL_RECURSION_DEPTH;
+      }
+      Tuple<Move, Double> response = min(board, depth);
       Move move = response.x();
-      if (move == null) {throw new Error("CRYYY");}
       board.move(move);
     }
   }
