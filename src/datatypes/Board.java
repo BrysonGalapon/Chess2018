@@ -237,6 +237,18 @@ public class Board {
   }
 
   /**
+   * Obtain the piece at a given square, without removing it
+   * @param square the square (row, col) to get piece from
+   * @return the piece on that square, if it exists.
+   *         if the piece doesn't exist, return null
+   */
+  public Piece getPiece(Tuple<Integer, Integer> square) {
+    Piece piece = board[square.x()][square.y()];
+    if (piece == null) {return null;}
+    return piece;
+  }
+
+  /**
    * Check if a square contains a piece on it
    * @param row 0-indexed row of square query
    * @param col 0-indexed column of square query
@@ -382,9 +394,35 @@ public class Board {
     return true;
   }
 
+
+  /**
+   * Make a promotion move on this board - does nothing if move is illegal
+   *  - if move is legal, toggles player turn
+   * @param startSq start square for move
+   * @param endSq end square for move
+   * @param promotion piece to promote to 
+   * @return true iff move was a legal move, else false
+   */
+  public boolean move(String startSq, String endSq, PieceType promotion) {
+    Set<Move> legalMoves = legalMoves();
+    for (Move move : legalMoves) {
+      if (!move.isPromotion()) {continue;}
+      // ignore move if end and start squares are different
+      if (!move.getStartSquare().equals(startSq) || !move.getEndSquare().equals(endSq)) {continue;}
+      // check if promoted piece is same
+      if (!move.getPromotion().equals(promotion)) {continue;}
+
+      return this.move(move);
+    }
+
+    // couldn't find move in set of legal moves
+    return false;
+  }
+
   /**
    * Make a move on this board - does nothing if move is illegal
    *  - if move is legal, toggles player turn
+   *  - ASSUMES that the move is not a promotion!
    * @param startSq start square for move
    * @param endSq end square for move
    * @return true iff move was a legal move, else false
@@ -405,6 +443,7 @@ public class Board {
   /**
    * Make a move on this board - does nothing if move is illegal
    *  - if move is legal, toggles player turn
+   *  - ASSUMES that the move is not a promotion!
    * @param startSq start square for move
    * @param endSq end square for move
    * @return true iff move was a legal move, else false
@@ -414,8 +453,48 @@ public class Board {
   }
 
   /**
+   * Make a promotion move on this board - does nothing if move is illegal
+   *  - if move is legal, toggles player turn
+   * @param startSq start square for move
+   * @param endSq end square for move
+   * @param promotion piece to promote to
+   * @return true iff move was a legal move, else false
+   */
+  public boolean move(Tuple<Integer, Integer>  startSq, Tuple<Integer, Integer> endSq, PieceType promotion) {
+    return this.move(startSq.x(), startSq.y(), endSq.x(), endSq.y(), promotion);
+  }
+
+  /**
+   * Make a promotion move on this board - does nothing if move is illegal
+   *  - if move is legal, toggles player turn
+   * @param startRow 0-indexed row of start square
+   * @param startCol 0-indexed column of start square
+   * @param endRow 0-indexed row of end square
+   * @param endCol 0-indexed column of end square
+   * @param promotion piece to promote to
+   * @return true iff move was a legal move, else false
+   */
+  public boolean move(int startRow, int startCol, int endRow, int endCol, PieceType promotion) {
+    Set<Move> legalMoves = legalMoves();
+    for (Move move : legalMoves) {
+      if (!move.isPromotion()) {continue;}
+      // ignore move if end and start squares are different
+      if (move.getStartRow() != startRow || move.getStartCol() != startCol) {continue;}
+      if (move.getEndRow() != endRow || move.getEndCol() != endCol) {continue;}
+      // check if promoted piece is same
+      if (!move.getPromotion().equals(promotion)) {continue;}
+
+      return this.move(move);
+    }
+
+    // couldn't find move in legal moves
+    return false;
+  }
+
+  /**
    * Make a move on this board - does nothing if move is illegal
    *  - if move is legal, toggles player turn
+   *  - ASSUMES that the move is not a promotion!
    * @param startRow 0-indexed row of start square
    * @param startCol 0-indexed column of start square
    * @param endRow 0-indexed row of end square
